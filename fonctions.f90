@@ -119,83 +119,85 @@ contains
        k=k+1
     end do
   end subroutine residu
+!!$
+!!$
+!!$
+!!$!! ARNOLDI
+  subroutine Arnoldi(A,r,H,t)
+    integer,intent(in)::t !!taille des matrices
+    real*8,dimension(t,t),intent(in)::A
+    real*8,dimension(t,t)::v
+    real*8,dimension(t,t),intent(out)::H
+    real*8,dimension(t),intent(in)::r
+    real*8,dimension(t)::z,q,z1
+    integer :: i,j 
+    real*8::sum
 
+    v(1,:)=r/sqrt(sum(r*r))   !! sqrt(sum(v*v)) revient à faire la norme :) 
 
-
-!! ARNOLDI
-!!$  subroutine Arnoldi(A,v,H,t)
-!!$    integer,intent(in)::t !!taille des matrices
-!!$    real*8,dimension(t,t),intent(in)::A
-!!$    real*8,dimension(t,t),intent(inout)::v
-!!$    real*8,dimension(t,t),intent(out)::H
-!!$    real*8,dimension(t)::z,q
-!!$    integer :: i,j 
-!!$    real*8::sum
-!!$
-!!$    v(1,:)=v/sqrt(sum(v(1,:)*v(1,:)))   !! sqrt(sum(v*v)) revient à faire la norme :) 
-!!$
-!!$    do j=1,t
-!!$       q=0.
-!!$       do i=1,j
-!!$          
-!!$          h(i,j)=A*v(j,:)*v(i,:)
-!!$       end do
-!!$    q=0
-!!$    do i=1,j
-!!$       q=q+h(i,j)*v(i,:)
-!!$    end do
-!!$    call multi_mat(z,A,v(j,:),t)
-!!$   
-!!$    z=Z-q
-!!$    H(j+1,j)=sqrt(sum(z*z))
-!!$    if (H(j+1,j)==0) then
-!!$       stop
-!!$    end if 
-!!$    v(j+1)=z/H(j+1,j)    
-!!$    end do 
-!!$
-!!$end subroutine
-!!$
-!!$
-!!$!!GMRes
-!!$  subroutine GMRes(A,b,x,t)
-!!$    integer,intent(in)::t !!taille des matrices
-!!$    real*8,dimension(t,t),intent(in)::A
-!!$    real*8,dimension(t),intent(in)::b
-!!$    real*8,dimension(t),intent(inout)::x
-!!$    real*8,dimension(t)::e,r,z,v
-!!$    real*8,dimension(t,t)::H
-!!$    real*8:: alpha,eps,nume,denom,max,beta,y
-!!$    integer :: k, kmax,i
-!!$    
-!!$    
-!!$    e=0.
-!!$    e(1)=1.
-!!$    call Multi_mat(z,A,x,t)
-!!$    r=b-z
-!!$   
-!!$    beta=sqrt(sum(r*r))
-!!$    k=0
-!!$    eps=0.01
-!!$    do while(beta>eps .and. k<kmax)
-!!$       call arnoldi(A,r,H,t)
-!!$       call Multi_mat(z,H,y,t) !! gros problème là, on ne sait pas ce que c'est y 
-!!$       y=sqrt(sum((beta*e-H*y)**2)) !! c'est quoi le premier y ? :/ 
-!!$       x=x+r*y
-!!$       r=y
-!!$       beta=sqrt(sum(r*r))
-!!$       k=k+1
-!!$    end do
-!!$    
-!!$    if (k>kmax) then 
-!!$       print*, 'tolérence non atteinte', beta 
-!!$    end if
-!!$    
-!!$  end subroutine GMRes
+    do j=1,t
        
+       do i=1,j
+          call multi_mat(z1,A,v(j,:),t)
+          h(i,j)=dot_product(z1,v(i,:))  !!fait le produit scalaire (à mettre de partout peut etre)
+       end do
+    q=0.
+    do i=1,j
+       q=q+h(i,j)*v(i,:)
+    end do
+    call multi_mat(z,A,v(j,:),t)
+   
+    z=Z-q
+    H(j+1,j)=sqrt(sum(z*z))
+    if (H(j+1,j)==0) then
+       stop
+    end if 
+    v(j+1,:)=z/H(j+1,j)    
+    end do 
+
+end subroutine
+
+
+!!GMRes
+  subroutine GMRes(A,b,x,t)
+    integer,intent(in)::t !!taille des matrices
+    real*8,dimension(t,t),intent(in)::A
+    real*8,dimension(t),intent(in)::b
+    real*8,dimension(t),intent(inout)::x
+    real*8,dimension(t)::e,r,z,v
+    real*8,dimension(t,t)::H
+    real*8:: alpha,eps,nume,denom,max,beta,y
+    integer :: k, kmax,i
+    
+    
+    e=0.
+    e(1)=1.
+    call Multi_mat(z,A,x,t)
+    r=b-z
+   
+    beta=sqrt(sum(r*r))
+    k=0
+    eps=0.01
+    do while(beta>eps .and. k<kmax)
+       call arnoldi(A,r,H,t)
+       call Multi_mat(z,H,y,t) !! gros problème là, on ne sait pas ce que c'est y 
+       y=sqrt(sum((beta*e-H*y)**2)) !! c'est quoi le premier y ? :/ 
+       x=x+r*y
+       r=y
+       beta=sqrt(sum(r*r))
+       k=k+1
+    end do
+    
+    if (k>kmax) then 
+       print*, 'tolérence non atteinte', beta 
+    end if
+    
+  end subroutine GMRes
 
 
 
+
+  
   Subroutine givens(A,t,Q,R) !! givens marche :D 
     integer,intent(in)::t
     real*8,dimension(t,t),intent(in)::A
@@ -251,8 +253,6 @@ subroutine mat_rot(t,i,j,c,s,M)
   print*,"voilà M",M
 
 end subroutine mat_rot
-
-
 
 
 
