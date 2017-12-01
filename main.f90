@@ -34,16 +34,16 @@ Id=reshape((/1,((0,i=1,2),1,j=1,1)/),(/t,t/))
 
   print*,"GPO : ",x
   x=1.
-  call residu(A,b,x,t)
+  call residu(A,b,x,t) !! celle ci non plus
   print*,"residu : ",x
 
   x=1.
   call Jacobi(A,b,x,t) !! pas sur qu'elle marche cette méthode.. 
   print*,"Jacobi : ",x
 
-!!$  x=1
-!!$  call GMRes(A,b,x,t)
-!!$  print*, "GMres : ", x
+  x=1
+  call GMRes(A,b,x,t)
+  print*, "GMres : ", x
 
 
 A1(1,1)=2
