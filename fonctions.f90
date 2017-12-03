@@ -24,6 +24,7 @@ contains
        end do
        X=Xnext
     end do
+    
   end subroutine Jacobi
 
 
@@ -70,6 +71,7 @@ contains
           end if
        end do
        k=k+1
+       call write(k,sqrt(sum(r*r)),"GPO.txt")
     end do
   end subroutine GPO
 
@@ -77,7 +79,7 @@ contains
 
 !! RESIDU OPTIMAL
   subroutine residu(A,b,x,t)
-    integer,intent(in)::t !!taille des matrices
+    integer,intent(in)::t !!taille des matrices 
     real*8,dimension(t,t),intent(in)::A
     real*8,dimension(t),intent(in)::b
     real*8,dimension(t),intent(inout)::x
@@ -229,24 +231,24 @@ end subroutine
        do i=t,j+1,-1
           l1=i !! ligne qu'on veut annuler
           l2=i-1
-          print*,R
+          
           Norme=sqrt(R(l1,j)**2+R(l2,j)**2)
-          print*,Norme,"  la norme "
+          
           call mat_rot(t,l1,l2,R(L2,j)/Norme,R(l1,j)/Norme,G)
           !! on applique la rotation
           R=matmul(G,R)
           Q=matmul(Q,transpose(G))
-          print*,j,i
+          
        end do
     end do
     n=t-1
-    print*,Q
+    
   if (R(n,n)<0)then
      R(n,n)=-R(n,n)
-     print*, "je suis là"
+     
      Q(:,2)=-Q(:,2)
   end if
-    print*,"hello"
+    
   end subroutine givens
 
 subroutine mat_rot(t,i,j,c,s,M)
@@ -262,7 +264,7 @@ subroutine mat_rot(t,i,j,c,s,M)
   M(j,j)=c
   M(i,j)=-s
   M(j,i)=s
-  print*,"voilà M",M
+  
 
 end subroutine mat_rot
 
@@ -340,5 +342,22 @@ end subroutine mat_rot
          x(i)=(y(i)-L2(i,i+1)*y(i+1))/L2(i,i)
       end do
     end subroutine reso
+
+
+    subroutine write(n,x,name)
+      integer,intent(in)::n
+      real*8,intent(in)::x
+      character*7 :: name
+
+
+      open(1,file=name, form="formatted",position="append")
+      print*,n,x
+      write(1,*)n,x
+      close(1)
+    end subroutine write
+    
+
+
+      
 
   end module fonctions
