@@ -119,16 +119,19 @@ contains
        k=k+1
     end do
   end subroutine residu
-!!$
-!!$
-!!$
+
+
+
+
+  
 !!$!! ARNOLDI
-  subroutine Arnoldi(A,r,H,t)
+  subroutine Arnoldi(A,r,H,vm,t)
     integer,intent(in)::t !!taille des matrices
     real*8,dimension(t,t),intent(in)::A
     real*8,dimension(t,t)::v
     real*8,dimension(t,t),intent(out)::H
     real*8,dimension(t),intent(in)::r
+    real*8,dimension(t), intent(out)::vm
     real*8,dimension(t)::z,q,z1
     integer :: i,j 
     real*8::sum
@@ -152,9 +155,10 @@ contains
     if (H(j+1,j)==0) then
        stop
     end if 
-    v(j+1,:)=z/H(j+1,j)    
+    v(j+1,:)=z/H(j+1,j)
+    vm=v(j+1,:)
     end do 
-
+    
 end subroutine
 
 
@@ -164,9 +168,9 @@ end subroutine
     real*8,dimension(t,t),intent(in)::A
     real*8,dimension(t),intent(in)::b
     real*8,dimension(t),intent(inout)::x
-    real*8,dimension(t)::e,r,z,v
-    real*8,dimension(t,t)::H
-    real*8:: alpha,eps,nume,denom,max,beta,y
+    real*8,dimension(t)::e,r,z,v,vm,sol,y
+    real*8,dimension(t,t)::H,Q,Rm,G,L,L2
+    real*8:: alpha,eps,nume,denom,max,beta
     integer :: k, kmax,i
     
     
@@ -179,9 +183,17 @@ end subroutine
     k=0
     eps=0.01
     do while(beta>eps .and. k<kmax)
-       call arnoldi(A,r,H,t)
-       call Multi_mat(z,H,y,t) !! gros problème là, on ne sait pas ce que c'est y 
-       y=sqrt(sum((beta*e-H*y)**2)) !! c'est quoi le premier y ? :/ 
+       call arnoldi(A,r,H,vm,t)
+       call givens(H,t,Q,Rm) !! decompostion QR de H
+!!$       !! on va calculer argmin
+!!$       G=transpose(Q)*beta*e1
+!!$       
+!!$       call cholesky(t,R,L,L2) !! resolution du systeme Rny=Gn
+!!$       call solv(t,L,L2,G,y)
+!!$       call Multi_mat(matmul(
+       
+       call Multi_mat(sol,H,y,t)
+       y=sqrt(sum((beta*e-sol)**2)) 
        x=x+r*y
        r=y
        beta=sqrt(sum(r*r))
