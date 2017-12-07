@@ -1,11 +1,15 @@
+#Objet
+OBJ= fonctions.o CSR.o main.o
+optn= -g -fbounds-check -o0 -Wall
 
 
-exe:fonctions.o main.o
-	gfortran -o exe fonctions.o main.o -g -fbounds-check
-fonctions.o:fonctions.f90
-	gfortran -c fonctions.f90
-main.o:main.f90 fonctions.o
-	gfortran -c main.f90
+#Compile et crée l'executable
+exe: $(OBJ)
+	gfortran $(optn) -o exe $(OBJ)
 
+%.o: %.f90
+	gfortran -c $<
+
+#Cleaner
 clean:
 	rm -r *~ *.o *.mod
