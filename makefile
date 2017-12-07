@@ -8,5 +8,4 @@ main.o:main.f90 fonctions.o
 	gfortran -c main.f90
 
 clean:
-	rm -r *~ *.o
-	
+	rm -r *~ *.o *.mod
