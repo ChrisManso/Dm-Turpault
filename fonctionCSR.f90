@@ -1,5 +1,5 @@
 module fonctionCSR
-
+use fonctions
 contains
 
 Subroutine JacobiCSR(A,b,x,t)
@@ -14,7 +14,7 @@ Subroutine JacobiCSR(A,b,x,t)
     real*8::sum,diag
 
     call CSR(A,AA,JA,IA)
-    
+
     do k=0,10
        do i=1,t
           sum=0.
@@ -32,33 +32,33 @@ Subroutine JacobiCSR(A,b,x,t)
        end do
        X=Xnext
     end do
-    
+
   end subroutine JacobiCSR
 
 
-  Subroutine Jacobi(A,b,x,t)
-    integer,intent(in)::t !!taille des matrices
-    real*8,dimension(t,t),intent(in)::A
-    real*8,dimension(t),intent(in)::b
-    real*8,dimension(t),intent(inout)::x
-    real*8,dimension(t)::d,Xnext
-    integer ::i,j,k
-    real*8::sum
-
-    do k=0,10
-       do i=1,t
-          sum=0.
-          do j=1,t
-             if (i/=j) then
-                sum=sum+A(i,j)*X(j)
-             end if
-          end do
-          Xnext(i)=(b(i)-sum)/A(i,i)
-       end do
-       X=Xnext
-    end do
-    
-  end subroutine Jacobi
+  ! Subroutine Jacobi(A,b,x,t)
+  !   integer,intent(in)::t !!taille des matrices
+  !   real*8,dimension(t,t),intent(in)::A
+  !   real*8,dimension(t),intent(in)::b
+  !   real*8,dimension(t),intent(inout)::x
+  !   real*8,dimension(t)::d,Xnext
+  !   integer ::i,j,k
+  !   real*8::sum
+  !
+  !   do k=0,10
+  !      do i=1,t
+  !         sum=0.
+  !         do j=1,t
+  !            if (i/=j) then
+  !               sum=sum+A(i,j)*X(j)
+  !            end if
+  !         end do
+  !         Xnext(i)=(b(i)-sum)/A(i,i)
+  !      end do
+  !      X=Xnext
+  !   end do
+  !
+  ! end subroutine Jacobi
 
 
 
@@ -84,7 +84,7 @@ subroutine multi_matCSR(FF,B,F,N)
          end do
          FF(i)=res
       end do
- end subroutine multi_mat
+ end subroutine multi_matCSR
 
 
 subroutine GPOCSR(A,b,x,t)
@@ -111,7 +111,7 @@ subroutine GPOCSR(A,b,x,t)
           max=abs(r(i))
        end if
     end do
-    do while (k<kmax .and. max>eps) 
+    do while (k<kmax .and. max>eps)
        call multi_matCSR(z,A,r,t)
 
        do i=1,t
@@ -134,7 +134,7 @@ subroutine GPOCSR(A,b,x,t)
   end subroutine GPOCSR
 
 subroutine residuCSR(A,b,x,t)
-    integer,intent(in)::t !!taille des matrices 
+    integer,intent(in)::t !!taille des matrices
     real*8,dimension(t,t),intent(in)::A
     real*8,dimension(t),intent(in)::b
     real*8,dimension(t),intent(inout)::x
@@ -149,7 +149,7 @@ subroutine residuCSR(A,b,x,t)
     alpha=0.
     z=0.
     Call multi_matCSR(r,A,x,t)
-    r=b-r 
+    r=b-r
     max=0
     k=0
     do i=0,t
@@ -158,7 +158,7 @@ subroutine residuCSR(A,b,x,t)
        end if
     end do
 
-    do while (k<kmax .and.  max>eps) 
+    do while (k<kmax .and.  max>eps)
        call multi_matCSR(z,A,r,t)
        do i=1,t
           nume=nume+r(i)*z(i)
@@ -187,13 +187,13 @@ subroutine residuCSR(A,b,x,t)
     real*8,dimension(t),intent(in)::r
     real*8,dimension(t), intent(out)::vm
     real*8,dimension(t)::z,q,z1
-    integer :: i,j 
+    integer :: i,j
     real*8::sum
 
-    v(1,:)=r/sqrt(sum(r*r))   !! sqrt(sum(v*v)) revient à faire la norme :) 
+    v(1,:)=r/sqrt(sum(r*r))   !! sqrt(sum(v*v)) revient à faire la norme :)
 
     do j=1,t
-       
+
        do i=1,j
           call multi_matCSR(z1,A,v(j,:),t)
           h(i,j)=dot_product(z1,v(i,:))  !!fait le produit scalaire (à mettre de partout peut etre)
@@ -203,16 +203,16 @@ subroutine residuCSR(A,b,x,t)
        q=q+h(i,j)*v(i,:)
     end do
     call multi_mat(z,A,v(j,:),t)
-   
+
     z=Z-q
     H(j+1,j)=sqrt(sum(z*z))
     if (H(j+1,j)==0) then
        stop
-    end if 
+    end if
     v(j+1,:)=z/H(j+1,j)
     vm=v(j+1,:)
-    end do 
-    
+    end do
+
 end subroutine ArnoldiCSR
 
 

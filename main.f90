@@ -1,5 +1,6 @@
 program main
   use fonctions
+  use fonctionCSR
   implicit none
 
   integer::t,i,j
@@ -19,7 +20,7 @@ program main
      end do
   end do
 
-  Id=reshape((/1,((0,i=1,2),1,j=1,1)/),(/t,t/))        
+  Id=reshape((/1,((0,i=1,2),1,j=1,1)/),(/t,t/))
   A=alpha*Id+ matmul(transpose(G),G)
 
 
@@ -43,10 +44,13 @@ program main
 
   call Jacobi(A,b,x,t) !! pas sur qu'elle marche cette méthode..
 
-
   print*,"Jacobi : ",x
 
   x=1
+
+  call JacobiCSR(A,b,x,t)
+
+  print*,"jacobi : ",x
 
   call GMRes(A,b,x,t)
 
@@ -68,7 +72,6 @@ program main
   !!print*,"je suis Q ",Q
   !!print*,"je suis R:",R
   A2=matmul(Q,R)
-  
+
 
 end program main
-    
