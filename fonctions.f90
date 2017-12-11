@@ -60,6 +60,7 @@ contains
           nume=nume+r(i)**2
           denom=denom+z(i)*r(i)
        end do
+
        alpha = nume/denom
 
        x=x+alpha*r
