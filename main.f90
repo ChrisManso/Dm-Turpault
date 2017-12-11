@@ -1,5 +1,6 @@
 program main
   use fonctions
+  use CSRconvert
   use fonctionCSR
   implicit none
 
@@ -12,6 +13,11 @@ program main
   real*8,dimension(2)::x
   real*8::alpha
 
+  integer::nlen,ncols,nlines,nelmt
+  real*8,dimension(:),allocatable::AA
+  integer,dimension(:),allocatable::JA,IA
+  real*8,dimension(4,4)::Test
+
   t=2
   alpha=0.1
   do i=1,t
@@ -19,6 +25,28 @@ program main
         G(i,j)=rand(1)
      end do
   end do
+
+
+!!! Exemple d'uitilisation des fonctions NbrMat et readMat
+  nlen=len('matrix/bcsstk18.mtx')
+  call NbrMat('matrix/bcsstk18.mtx',nlen,ncols,nlines,nelmt)
+  print*, ncols,nlines,nelmt
+  allocate (AA(1:nelmt),JA(1:nelmt),IA(1:ncols+1))
+  call readMat('matrix/bcsstk18.mtx',ncols,nelmt,AA,IA,JA,nlen)
+
+
+!!! Exemple d'utilisation de la fonctions DenseToCSR
+Test(1,:)=(/12.,4.,0.,0./)
+Test(2,:)=(/0.,7.,9.,-3./)
+Test(3,:)=(/1.,0.,5.,3.4/)
+Test(4,:)=(/0.,0.,-3.9,1./)
+call NbrElemt(Test,nelmt,nlines)
+print*,nelmt,nlines
+allocate (AA(1:nelmt),JA(1:nelmt),IA(1:nlines+1))
+call DenseToCSR(Test,AA,JA,IA,nelmt)
+print*, "AA vaut",AA
+print*, "JA vaut",JA
+print*, "IA vaut",IA
 
   Id=reshape((/1,((0,i=1,2),1,j=1,1)/),(/t,t/))
   A=alpha*Id+ matmul(transpose(G),G)
@@ -73,5 +101,7 @@ program main
   !!print*,"je suis R:",R
   A2=matmul(Q,R)
 
+
+  deallocate(AA,JA,IA)
 
 end program main
