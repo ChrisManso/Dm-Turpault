@@ -8,11 +8,11 @@ contains
     real*8,dimension(t,t),intent(in)::A
     real*8,dimension(t),intent(in)::b
     real*8,dimension(t),intent(inout)::x
-    real*8,dimension(t)::d,Xnext
+    real*8,dimension(t)::d,Xnext,r
     integer ::i,j,k
     real*8::sum
 
-    do k=0,10
+    do k=0,50
        do i=1,t
           sum=0.
           do j=1,t
@@ -23,6 +23,9 @@ contains
           Xnext(i)=(b(i)-sum)/A(i,i)
        end do
        X=Xnext
+       call multi_mat(r,A,X,t)
+       r=r-b
+       call write(k,sqrt(sum(r*r)),"Jacobi.txt")
     end do
 
   end subroutine Jacobi
@@ -42,7 +45,7 @@ contains
     r=b-r
 
     k=0
-    kmax=5
+    kmax=50
     eps=0.1
     nume=0.
     denom=0.
@@ -71,7 +74,7 @@ contains
           if (abs(r(i))>max) then
              max=abs(r(i))
           end if
-          !print*,k,i
+          !!print*,k,i
        end do
        k=k+1
        call write(k,sqrt(sum(r*r)),"GPO.txt")
@@ -119,6 +122,7 @@ contains
           end if
        end do
        k=k+1
+       call write(k,sqrt(sum(r*r)),"ResMin.txt")
     end do
   end subroutine residu
 
@@ -330,7 +334,7 @@ end subroutine
     end do
 
     if (k>kmax) then
-       print*, 'tolérence non atteinte', beta
+       !print*, 'tolérence non atteinte', beta
     end if
 
   end subroutine GMRes
@@ -479,7 +483,7 @@ end subroutine mat_rot
 
 
       open(1,file=name, form="formatted",position="append")
-      print*,n,x
+      !print*,n,x
       write(1,*)n,x
       close(1)
     end subroutine write
