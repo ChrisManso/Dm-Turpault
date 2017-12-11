@@ -9,18 +9,19 @@ contains
     real*8,dimension(t),intent(in)::b
     real*8,dimension(t),intent(inout)::x
     real*8,dimension(t)::d,Xnext,r
+    real*8::z
     integer ::i,j,k
-    real*8::sum
+    real*8::sigma
 
-    do k=0,50
+    do k=0,5
        do i=1,t
-          sum=0.
+          sigma=0.
           do j=1,t
              if (i/=j) then
-                sum=sum+A(i,j)*X(j)
+                sigma=sigma+A(i,j)*X(j)
              end if
           end do
-          Xnext(i)=(b(i)-sum)/A(i,i)
+          Xnext(i)=(b(i)-sigma)/A(i,i)
        end do
        X=Xnext
        call multi_mat(r,A,X,t)
@@ -77,7 +78,7 @@ contains
           !!print*,k,i
        end do
        k=k+1
-       call write(k,sqrt(sum(r*r)),"GPO.txt")
+       call write(k,sqrt(sum(r*r)),"GPOpti.txt")
     end do
   end subroutine GPO
 
@@ -479,7 +480,7 @@ end subroutine mat_rot
     subroutine write(n,x,name)
       integer,intent(in)::n
       real*8,intent(in)::x
-      character*7 :: name
+      character*10 :: name
 
 
       open(1,file=name, form="formatted",position="append")
