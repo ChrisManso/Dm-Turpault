@@ -8,26 +8,58 @@ contains
     real*8,dimension(t,t),intent(in)::A
     real*8,dimension(t),intent(in)::b
     real*8,dimension(t),intent(inout)::x
-    real*8,dimension(t)::d,Xnext,r
-    real*8::z
-    integer ::i,j,k
-    real*8::sigma
+    real*8,dimension(t,t)::D,N
+    real*8,dimension(t)::r
+    integer ::i,j,k,kmax
+    real*8::max,res
 
-    do k=0,100
-       do i=1,t
-          sigma=0.
-          do j=1,t
-             if (i/=j) then
-                sigma=sigma+A(i,j)*X(j)
-             end if
-          end do
-          Xnext(i)=(b(i)-sigma)/A(i,i)
-       end do
-       X=Xnext
-       call multi_mat(r,A,X,t)
-       r=r-b
-       call write(k,sqrt(sum(r*r)),"Jacobi.txt")
+    r=b-matmul(A,x)
+
+    E=0.
+    N=0.
+    do i=1,t
+      do j=1,t
+        if (i==j) then
+          D(i,j)=A(i,i)
+        else
+          N(i,j)=-A(i,j)
+        end if
+      end do
     end do
+
+    k=0
+    kmax=1000
+    max=abs(sum(r*r))
+
+    do while (k<kmax .and. eps<max)
+      x=matmul(matmul(transpose(D),N),x)+matmul(transpose(D),b)
+
+      r=matmul(matmul(transpose(D),N),r)
+
+      if (abs(SUM(r*r))>max) then
+         max=abs(sum(r*r))
+      end if
+      k=k+1
+
+    end do
+
+
+
+  !!  do k=0,100
+    !   do i=1,t
+    !      sigma=0.
+    !      do j=1,t
+    !         if (i/=j) then
+    !            sigma=sigma+A(i,j)*X(j)
+    !         end if
+    !      end do
+    !      Xnext(i)=(b(i)-sigma)/A(i,i)
+    !   end do
+    !   X=Xnext
+    !   call multi_mat(r,A,X,t)
+    !   r=r-b
+    !   call write(k,sqrt(sum(r*r)),"Jacobi.txt")
+    !end do
 
   end subroutine Jacobi
 
@@ -72,7 +104,7 @@ contains
 
 
           if (abs(SUM(r*r))>max) then
-             max=abs(r(i))
+             max=abs(sum(r*r))
           end if
 
        k=k+1
@@ -118,7 +150,7 @@ contains
        r=r-alpha*z
 
           if (abs(sum(r*r))>max) then
-             max=r(i)
+             max=abs(sum(r*r))
           end if
 
        k=k+1
@@ -175,7 +207,7 @@ contains
 
 
          if (abs(sum(r*r))>max) then
-            max=r(i)
+            max=abs(sum(r*r))
          end if
 
     end do
@@ -246,7 +278,7 @@ contains
       k=k+1
 
          if (abs(sum(r*r))>max) then
-            max=r(i)
+            max=abs(sum(r*r))
          end if
 
     end do
@@ -304,7 +336,7 @@ contains
 
 
     if (abs(sum(r*r))>max) then
-        max=r(i)
+        max=abs(sum(r*r))
     end if
 
    end do
