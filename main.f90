@@ -5,12 +5,11 @@ program main
   implicit none
 
   integer::t,i,j
-  real*8,dimension(20,20)::A,G,Id
+  real*8,dimension(:,:),allocatable::A,G,Id
 
   real*8,dimension(3,3)::A1,A2,Q,R
 
-  real*8,dimension(2)::b
-  real*8,dimension(2)::x
+  real*8,dimension(:),allocatable::x,b
   real*8::alpha
 
   integer::nlen,ncols,nlines,nelmt
@@ -42,6 +41,8 @@ program main
 
   !!! Création de la matrice An
     t=20
+
+    Allocate(x(1:t),b(1:t),A(1:t,1:t),G(1:t,1:t),Id(1:t,1:t))
     alpha=0.1
     do i=1,t
        do j=1,t
@@ -105,6 +106,6 @@ program main
   A2=matmul(Q,R)
 
 
-  deallocate(AA,JA,IA)
+  deallocate(AA,JA,IA,x,b,A,G,Id)
 
 end program main

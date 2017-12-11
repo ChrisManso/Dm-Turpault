@@ -60,15 +60,18 @@ contains
           nume=nume+r(i)**2
           denom=denom+z(i)*r(i)
        end do
+
        alpha = nume/denom
 
        x=x+alpha*r
        r=r-alpha*z
 
+
        do i=0,t
           if (abs(r(i))>max) then
              max=abs(r(i))
           end if
+          !print*,k,i
        end do
        k=k+1
        call write(k,sqrt(sum(r*r)),"GPO.txt")
@@ -227,7 +230,7 @@ contains
          denom=denom+z(i)*z(i)
 
       end do
-      
+
       alpha=nume/denom
       x=x+alpha*q
       r=r-alpha*w
