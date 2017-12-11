@@ -82,7 +82,6 @@ contains
     n=size(A,1)
     Elmt_line=1 !Compte le nombre d'éléments non nul par ligne --> IA
     IA(1)=1
-    print*,"ok"
     do i=1,n
       do j = 1,n
         if (abs(A(i,j))>10**(-7)) then
