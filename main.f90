@@ -40,7 +40,7 @@ program main
 
 
   !!! Création de la matrice An
-    t=20
+    t=5
 
     Allocate(x(1:t),b(1:t),A(1:t,1:t),G(1:t,1:t),Id(1:t,1:t))
     alpha=0.1
@@ -59,7 +59,7 @@ program main
   b(2)=0.125
   b=b/sqrt(sum(b*b))
   x=1.
-  
+
 
   call GPO(A,b,x,t)
 
