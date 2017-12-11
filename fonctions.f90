@@ -13,7 +13,7 @@ contains
     integer ::i,j,k
     real*8::sigma
 
-    do k=0,5
+    do k=0,100
        do i=1,t
           sigma=0.
           do j=1,t
@@ -71,15 +71,14 @@ contains
        r=r-alpha*z
 
 
-       do i=0,t
-          if (abs(r(i))>max) then
+          if (abs(SUM(r*r))>max) then
              max=abs(r(i))
           end if
-          !!print*,k,i
-       end do
+
        k=k+1
        call write(k,sqrt(sum(r*r)),"GPOpti.txt")
     end do
+
   end subroutine GPO
 
 
@@ -94,7 +93,7 @@ contains
     real*8:: alpha,eps,nume,denom,max
     integer :: k, kmax,i
 
-    kmax=50
+    kmax=100
     eps=0.1
     nume=0.
     denom=0.
@@ -117,20 +116,21 @@ contains
 
        x=x+alpha*r
        r=r-alpha*z
-       do i=0,t
-          if (abs(r(i))>max) then
+
+          if (abs(sum(r*r))>max) then
              max=r(i)
           end if
-       end do
+
        k=k+1
        call write(k,sqrt(sum(r*r)),"ResMin.txt")
     end do
+
   end subroutine residu
 
 
 
 
-  subroutine preconresiduJacobi(A,b,x,t)  !!M-1Ax=M-1B aevc M diagonale
+  subroutine precon_residu_Jacobi(A,b,x,t)  !!M-1Ax=M-1B aevc M diagonale
     integer,intent(in)::t !!taille des matrices
     real*8,dimension(t,t),intent(in)::A
     real*8,dimension(t),intent(in)::b
@@ -147,16 +147,16 @@ contains
       M(i,i)=A(i,i)
       q(i)=r(i)*M(i,i)
     end do
+
     nume=0.
     denom=0.
     k=0
-    kmax=10
+    kmax=100
     eps=0.1
     max=abs(sum(r*r))
     do while((k<kmax .and.  max>eps))
 
       call multi_mat(w,A,q,t)
-
 
       do i=1,t
          z(i)=w(i)*M(i,i)
@@ -167,24 +167,24 @@ contains
       end do
 
       alpha=nume/denom
-
       x=x+alpha*q
       r=r-alpha*w
 
       q=q-alpha*z
       k=k+1
 
-      do i=0,t
+
          if (abs(sum(r*r))>max) then
             max=r(i)
          end if
-      end do
+
     end do
-  end subroutine preconresiduJacobi
+
+  end subroutine precon_residu_Jacobi
 
 
 
-  subroutine preconresiduSSOR(A,b,x,t)  !!M-1Ax=M-1B aevc M=(D-wR)D-1(D-wF))
+  subroutine precon_residu_SSOR(A,b,x,t)  !!M-1Ax=M-1B aevc M=(D-wR)D-1(D-wF))
     integer,intent(in)::t !!taille des matrices
     real*8,dimension(t,t),intent(in)::A
     real*8,dimension(t),intent(in)::b
@@ -198,6 +198,9 @@ contains
     r=b-r
     m=0.
 
+    E=0.
+    D=0.
+    F=0.
     do i=1,t
       do j=1,t
         if (i==j) then
@@ -211,14 +214,14 @@ contains
       end do
     end do
 
-    M=matmul(matmul((D-0.5*E),transpose(D)),(D-0.5*F))  !! construction du préconditionneur
 
+    M=matmul(matmul((D-0.5*E),transpose(D)),(D-0.5*F))  !! construction du préconditionneur
 
     call cholesky(t,M,L,L2)
     call reso(t,L,L2,r,q)
 
     nume=0.
-    denul=0.
+    denom=0.
     k=0
     kmax=10
     eps=0.1
@@ -228,9 +231,8 @@ contains
 
       call cholesky(t,M,L,L2)
       call reso(t,L,L2,w,z)
+
       do i=1,t
-
-
          nume=nume+q(i)*z(i)
          denom=denom+z(i)*z(i)
 
@@ -243,17 +245,72 @@ contains
       q=q-alpha*z
       k=k+1
 
-      do i=0,t
          if (abs(sum(r*r))>max) then
             max=r(i)
          end if
-      end do
+
     end do
-  end subroutine preconresiduSSOR
+
+  end subroutine precon_residu_SSOR
 
 
+ subroutine precon_residu_droite_Jacobi(A,b,x,t)
+   integer,intent(in)::t !!taille des matrices
+   real*8,dimension(t,t),intent(in)::A
+   real*8,dimension(t),intent(in)::b
+   real*8,dimension(t),intent(inout)::x
+   real*8,dimension(t,t)::M
+   real*8,dimension(t)::r,z,q,w
+   real*8:: alpha,eps,nume,denom,max
+   integer :: k, kmax,i
+   M=0.
+   do i=1,t
+     M(i,i)=A(i,i)
+
+     z(i)=x(i)*M(i,i)
+   end do
+
+   call multi_mat(r,matmul(A,transpose(M)),z,t)
+
+   r=b-r
+
+   nume=0.
+   denom=0.
+   k=0
+   kmax=100
+   eps=0.1
+   max=abs(sum(r*r))
 
 
+   do while((k<kmax .and.  max>eps))
+
+     !!resoudre Mz=r
+     do i=1,t
+        z(i)=r(i)*M(i,i)
+      end do
+
+      w=matmul(A,z)
+
+     do i=1,t
+        nume=nume+r(i)*w(i)
+        denom=denom+w(i)*w(i)
+     end do
+
+     alpha=nume/denom
+
+     x=x+alpha*z
+     r=r-alpha*w
+     k=k+1
+
+
+    if (abs(sum(r*r))>max) then
+        max=r(i)
+    end if
+
+   end do
+
+
+ end subroutine precon_residu_droite_Jacobi
 
 
 

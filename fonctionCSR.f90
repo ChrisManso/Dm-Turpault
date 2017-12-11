@@ -12,7 +12,9 @@ Subroutine JacobiCSR(A,b,x,t)
     real*8,dimension(t),intent(inout)::x
     real*8,dimension(t)::d,Xnext
     integer ::i,j,k,l,m, Nb_elem,Nb_li
+
     real*8::sigma,diag
+
 
     call NbrElemt(A,Nb_elem,Nb_li)
     Allocate(AA(1:Nb_elem), JA(1:Nb_elem),IA(1:Nb_li+1))
