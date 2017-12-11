@@ -12,7 +12,11 @@ Subroutine JacobiCSR(A,b,x,t)
     real*8,dimension(t),intent(inout)::x
     real*8,dimension(t)::d,Xnext
     integer ::i,j,k,l,m, Nb_elem,Nb_li
+<<<<<<< HEAD
     real*8::sum,diag
+=======
+    real*8::sigma,diag
+>>>>>>> 8e4d9f95f552931612faec3006ca168ec74ad284
 
     call NbrElemt(A,Nb_elem,Nb_li)
     Allocate(AA(1:Nb_elem), JA(1:Nb_elem),IA(1:Nb_li+1))
@@ -20,18 +24,18 @@ Subroutine JacobiCSR(A,b,x,t)
 
     do k=0,10
        do i=1,t
-          sum=0.
+          sigma=0.
           diag=0.
           l=IA(i)
           m=IA(i+1)-1
          do j=l,m
             if (i/=JA(j)) then
-               sum=sum+AA(j)*X(JA(j))
+               sigma=sigma+AA(j)*X(JA(j))
             else
                diag=AA(j)
             end if
          end do
-         Xnext(i)=(b(i)-sum)/diag
+         Xnext(i)=(b(i)-sigma)/diag
        end do
        X=Xnext
     end do
@@ -39,31 +43,6 @@ Subroutine JacobiCSR(A,b,x,t)
     deallocate(AA,IA,JA)
 
   end subroutine JacobiCSR
-
-
-  ! Subroutine Jacobi(A,b,x,t)
-  !   integer,intent(in)::t !!taille des matrices
-  !   real*8,dimension(t,t),intent(in)::A
-  !   real*8,dimension(t),intent(in)::b
-  !   real*8,dimension(t),intent(inout)::x
-  !   real*8,dimension(t)::d,Xnext
-  !   integer ::i,j,k
-  !   real*8::sum
-  !
-  !   do k=0,10
-  !      do i=1,t
-  !         sum=0.
-  !         do j=1,t
-  !            if (i/=j) then
-  !               sum=sum+A(i,j)*X(j)
-  !            end if
-  !         end do
-  !         Xnext(i)=(b(i)-sum)/A(i,i)
-  !      end do
-  !      X=Xnext
-  !   end do
-  !
-  ! end subroutine Jacobi
 
 
 
@@ -140,7 +119,7 @@ subroutine GPOCSR(A,b,x,t)
           end if
        end do
        k=k+1
-       call write(k,sqrt(sum(r*r)),"GPO.txt")
+       call write(k,sqrt(sum(r*r)),"GPOpti.txt")
     end do
   end subroutine GPOCSR
 
@@ -199,7 +178,6 @@ subroutine residuCSR(A,b,x,t)
     real*8,dimension(t), intent(out)::vm
     real*8,dimension(t)::z,q,z1
     integer :: i,j
-    real*8::sum
 
     v(1,:)=r/sqrt(sum(r*r))   !! sqrt(sum(v*v)) revient à faire la norme :)
 
