@@ -234,15 +234,12 @@ contains
       q=q-alpha*z
       k=k+1
 
-
          if (abs(sum(r*r))>max) then
             max=r(i)
          end if
 
     end do
   end subroutine precon_residu_SSOR
-
-
 
 
  subroutine precon_residu_droite_Jacobi(A,b,x,t)
@@ -264,7 +261,6 @@ contains
    call multi_mat(r,matmul(A,transpose(M)),z,t)
 
    r=b-r
-
 
    nume=0.
    denom=0.
