@@ -87,21 +87,18 @@ contains
     real*8:: alpha,eps,nume,denom,max
     integer :: k, kmax,i
 
-    kmax=5
+    kmax=50
     eps=0.1
     nume=0.
     denom=0.
     alpha=0.
     z=0.
     Call multi_mat(r,A,x,t)
+
     r=b-r
     max=0
     k=0
-    do i=0,t
-       if (abs(r(i))>max) then
-          max=r(i)
-       end if
-    end do
+    max=abs(sum(r*r))
 
     do while (k<kmax .and.  max>eps)
        call multi_mat(z,A,r,t)
@@ -121,6 +118,133 @@ contains
        k=k+1
     end do
   end subroutine residu
+
+
+
+
+  subroutine preconresiduJacobi(A,b,x,t)  !!M-1Ax=M-1B aevc M diagonale
+    integer,intent(in)::t !!taille des matrices
+    real*8,dimension(t,t),intent(in)::A
+    real*8,dimension(t),intent(in)::b
+    real*8,dimension(t),intent(inout)::x
+    real*8,dimension(t,t)::M
+    real*8,dimension(t)::r,z,q,w
+    real*8:: alpha,eps,nume,denom,max
+    integer :: k, kmax,i
+
+    call multi_mat(r,A,x,t)
+    r=b-r
+    m=0.
+    do i=1,t
+      M(i,i)=A(i,i)
+      q(i)=r(i)*M(i,i)
+    end do
+    nume=0.
+    denom=0.
+    k=0
+    kmax=10
+    eps=0.1
+    max=abs(sum(r*r))
+    do while((k<kmax .and.  max>eps))
+
+      call multi_mat(w,A,q,t)
+
+
+      do i=1,t
+         z(i)=w(i)*M(i,i)
+
+         nume=nume+q(i)*z(i)
+         denom=denom+z(i)*z(i)
+
+      end do
+
+      alpha=nume/denom
+
+      x=x+alpha*q
+      r=r-alpha*w
+
+      q=q-alpha*z
+      k=k+1
+
+      do i=0,t
+         if (abs(sum(r*r))>max) then
+            max=r(i)
+         end if
+      end do
+    end do
+  end subroutine preconresiduJacobi
+
+
+
+  subroutine preconresiduSSOR(A,b,x,t)  !!M-1Ax=M-1B aevc M=(D-wR)D-1(D-wF))
+    integer,intent(in)::t !!taille des matrices
+    real*8,dimension(t,t),intent(in)::A
+    real*8,dimension(t),intent(in)::b
+    real*8,dimension(t),intent(inout)::x
+    real*8,dimension(t,t)::M,L,L2,D,E,F
+    real*8,dimension(t)::r,z,q,w
+    real*8:: alpha,eps,nume,denom,max
+    integer :: k, kmax,i
+
+    call multi_mat(r,A,x,t)
+    r=b-r
+    m=0.
+
+    do i=1,t
+      do j=1,t
+        if (i==j) then
+          D(i,j)=A(i,i)
+        else if (j<i) then
+          E(i,j)=-A(i,j)
+        else
+          F(i,j)=-A(i,j)
+        end if
+
+      end do
+    end do
+
+    M=matmul(matmul((D-0.5*E),transpose(D)),(D-0.5*F))  !! construction du préconditionneur
+
+
+    call cholesky(t,M,L,L2)
+    call reso(t,L,L2,r,q)
+
+    nume=0.
+    denul=0.
+    k=0
+    kmax=10
+    eps=0.1
+    max=abs(sum(r*r))
+    do while((k<kmax .and.  max>eps))
+      call multi_mat(w,A,q,t)
+
+      call cholesky(t,M,L,L2)
+      call reso(t,L,L2,w,z)
+      do i=1,t
+
+
+         nume=nume+q(i)*z(i)
+         denom=denom+z(i)*z(i)
+
+      end do
+      
+      alpha=nume/denom
+      x=x+alpha*q
+      r=r-alpha*w
+
+      q=q-alpha*z
+      k=k+1
+
+      do i=0,t
+         if (abs(sum(r*r))>max) then
+            max=r(i)
+         end if
+      end do
+    end do
+  end subroutine preconresiduSSOR
+
+
+
 
 
 
@@ -285,9 +409,9 @@ end subroutine mat_rot
       do i=1,N
          res=0.d0
          do j=1,N
-            res=res+B(j,i)*F(j)
+            res=res+B(i,j)*F(j)
          end do
-         FF(j)=res
+         FF(i)=res
       end do
     end subroutine multi_mat
 
