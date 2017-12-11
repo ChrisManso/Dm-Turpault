@@ -1,6 +1,7 @@
 program main
   use fonctions
   use CSRconvert
+  use fonctionCSR
   implicit none
 
   integer::t,i,j
@@ -71,10 +72,13 @@ print*, "IA vaut",IA
 
   call Jacobi(A,b,x,t) !! pas sur qu'elle marche cette méthode..
 
-
   print*,"Jacobi : ",x
 
   x=1
+
+  call JacobiCSR(A,b,x,t)
+
+  print*,"jacobi : ",x
 
   call GMRes(A,b,x,t)
 
@@ -97,7 +101,7 @@ print*, "IA vaut",IA
   !!print*,"je suis R:",R
   A2=matmul(Q,R)
 
-  deallocate(AA,JA,IA)
 
+  deallocate(AA,JA,IA)
 
 end program main

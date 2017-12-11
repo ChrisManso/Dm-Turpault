@@ -1,5 +1,5 @@
 #Objet
-OBJ= fonctions.o CSR.o main.o
+OBJ= fonctions.o fonctionCSR.o main.o
 optn= -g -fbounds-check -o0 -Wall
 
 

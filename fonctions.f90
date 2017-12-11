@@ -24,7 +24,7 @@ contains
        end do
        X=Xnext
     end do
-    
+
   end subroutine Jacobi
 
 
@@ -53,7 +53,7 @@ contains
           max=abs(r(i))
        end if
     end do
-    do while (k<kmax .and. max>eps) 
+    do while (k<kmax .and. max>eps)
        call multi_mat(z,A,r,t)
 
        do i=1,t
@@ -79,7 +79,7 @@ contains
 
 !! RESIDU OPTIMAL
   subroutine residu(A,b,x,t)
-    integer,intent(in)::t !!taille des matrices 
+    integer,intent(in)::t !!taille des matrices
     real*8,dimension(t,t),intent(in)::A
     real*8,dimension(t),intent(in)::b
     real*8,dimension(t),intent(inout)::x
@@ -94,7 +94,7 @@ contains
     alpha=0.
     z=0.
     Call multi_mat(r,A,x,t)
-    r=b-r 
+    r=b-r
     max=0
     k=0
     do i=0,t
@@ -103,7 +103,7 @@ contains
        end if
     end do
 
-    do while (k<kmax .and.  max>eps) 
+    do while (k<kmax .and.  max>eps)
        call multi_mat(z,A,r,t)
        do i=1,t
           nume=nume+r(i)*z(i)
@@ -125,7 +125,7 @@ contains
 
 
 
-  
+
 !!$!! ARNOLDI
   subroutine Arnoldi(A,r,H,vm,t)
     integer,intent(in)::t !!taille des matrices
@@ -135,13 +135,13 @@ contains
     real*8,dimension(t),intent(in)::r
     real*8,dimension(t), intent(out)::vm
     real*8,dimension(t)::z,q,z1
-    integer :: i,j 
+    integer :: i,j
     real*8::sum
 
-    v(1,:)=r/sqrt(sum(r*r))   !! sqrt(sum(v*v)) revient à faire la norme :) 
+    v(1,:)=r/sqrt(sum(r*r))   !! sqrt(sum(v*v)) revient à faire la norme :)
 
     do j=1,t
-       
+
        do i=1,j
           call multi_mat(z1,A,v(j,:),t)
           h(i,j)=dot_product(z1,v(i,:))  !!fait le produit scalaire (à mettre de partout peut etre)
@@ -151,16 +151,16 @@ contains
        q=q+h(i,j)*v(i,:)
     end do
     call multi_mat(z,A,v(j,:),t)
-   
+
     z=Z-q
     H(j+1,j)=sqrt(sum(z*z))
     if (H(j+1,j)==0) then
        stop
-    end if 
+    end if
     v(j+1,:)=z/H(j+1,j)
     vm=v(j+1,:)
-    end do 
-    
+    end do
+
 end subroutine
 
 
@@ -174,13 +174,13 @@ end subroutine
     real*8,dimension(t,t)::H,Q,Rm,G,L,L2
     real*8:: alpha,eps,nume,denom,max,beta
     integer :: k, kmax,i
-    
-    
+
+
     e=0.
     e(1)=1.
     call Multi_mat(z,A,x,t)
     r=b-z
-   
+
     beta=sqrt(sum(r*r))
     k=0
     eps=0.01
@@ -189,30 +189,30 @@ end subroutine
        call givens(H,t,Q,Rm) !! decompostion QR de H
 !!$       !! on va calculer argmin
 !!$       G=transpose(Q)*beta*e1
-!!$       
+!!$
 !!$       call cholesky(t,R,L,L2) !! resolution du systeme Rny=Gn
 !!$       call solv(t,L,L2,G,y)
 !!$       call Multi_mat(matmul(
-       
+
        call Multi_mat(sol,H,y,t)
-       y=sqrt(sum((beta*e-sol)**2)) 
+       y=sqrt(sum((beta*e-sol)**2))
        x=x+r*y
        r=y
        beta=sqrt(sum(r*r))
        k=k+1
     end do
-    
-    if (k>kmax) then 
-       print*, 'tolérence non atteinte', beta 
+
+    if (k>kmax) then
+       print*, 'tolérence non atteinte', beta
     end if
-    
+
   end subroutine GMRes
 
 
 
 
-  
-  Subroutine givens(A,t,Q,R) !! givens marche :D 
+
+  Subroutine givens(A,t,Q,R) !! givens marche :D
     integer,intent(in)::t
     real*8,dimension(t,t),intent(in)::A
     real*8,dimension(t,t),intent(out)::Q,R
@@ -231,24 +231,24 @@ end subroutine
        do i=t,j+1,-1
           l1=i !! ligne qu'on veut annuler
           l2=i-1
-          
+
           Norme=sqrt(R(l1,j)**2+R(l2,j)**2)
-          
+
           call mat_rot(t,l1,l2,R(L2,j)/Norme,R(l1,j)/Norme,G)
           !! on applique la rotation
           R=matmul(G,R)
           Q=matmul(Q,transpose(G))
-          
+
        end do
     end do
     n=t-1
-    
+
   if (R(n,n)<0)then
      R(n,n)=-R(n,n)
-     
+
      Q(:,2)=-Q(:,2)
   end if
-    
+
   end subroutine givens
 
 subroutine mat_rot(t,i,j,c,s,M)
@@ -264,7 +264,7 @@ subroutine mat_rot(t,i,j,c,s,M)
   M(j,j)=c
   M(i,j)=-s
   M(j,i)=s
-  
+
 
 end subroutine mat_rot
 
@@ -285,8 +285,9 @@ end subroutine mat_rot
       do i=1,N
          res=0.d0
          do j=1,N
-            FF(i)=res+B(j,i)*F(j)
+            res=res+B(j,i)*F(j)
          end do
+         FF(j)=res
       end do
     end subroutine multi_mat
 
@@ -333,7 +334,7 @@ end subroutine mat_rot
       integer::i,j,k
 
       y(1)=f(1)/L(1,1)
-      do i=2,n   
+      do i=2,n
          y(i)=(F(i)-L(i,i-1)*y(i-1))/L(i,i)
       end do
 
@@ -355,9 +356,9 @@ end subroutine mat_rot
       write(1,*)n,x
       close(1)
     end subroutine write
-    
 
 
-      
+
+
 
   end module fonctions
