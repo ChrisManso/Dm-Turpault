@@ -1,5 +1,5 @@
 #Objet
-OBJ= fonctionCSR.o fonctions.o CSR.o main.o
+OBJ= fonctions.o CSR.o fonctionCSR.o main.o
 optn= -g -fbounds-check -o0 -Wall
 
 
@@ -13,4 +13,3 @@ exe: $(OBJ)
 #Cleaner
 clean:
 	rm -r *~ *.o *.mod
-	
