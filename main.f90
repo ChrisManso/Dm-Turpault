@@ -57,7 +57,7 @@ program main
   b(2)=0.125
   b=b/sqrt(sum(b*b))
   x=1.
-
+  
 
   call GPO(A,b,x,t)
 
@@ -68,6 +68,18 @@ program main
 
   print*,"residu : ",x
 
+  x=1.
+
+  call precon_residu_Jacobi(A,b,x,t)
+  print*,"precon_residu_Jacobi : ",x
+  x=1.
+
+  call precon_residu_SSOR(A,b,x,t)
+  print*,"precon_residu_SSOR : ",x
+  x=1.
+
+  call precon_residu_droite_Jacobi(A,b,x,t)
+  print*,"precon_residu_droite_Jacobi: ",x
   x=1.
 
   call Jacobi(A,b,x,t) !! pas sur qu'elle marche cette méthode..
@@ -85,7 +97,7 @@ program main
   print*, "GMres : ", x
 
   call GPOCSR(A,b,x,t)
-  print*, "GPO avec CRS: ", x 
+  print*, "GPO avec CRS: ", x
 
   A1(1,1)=2
   A1(1,2)=12

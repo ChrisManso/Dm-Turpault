@@ -13,9 +13,9 @@ Subroutine JacobiCSR(A,b,x,t)
     real*8,dimension(t)::d,Xnext
     integer ::i,j,k,l,m, Nb_elem,Nb_li
     real*8::sum,diag
-    
+
     call NbrElemt(A,Nb_elem,Nb_li)
-    Allocate(AA(1:Nb_elem), JA(1:Nb_elem),IA(1:Nb_li+1)) 
+    Allocate(AA(1:Nb_elem), JA(1:Nb_elem),IA(1:Nb_li+1))
     call DenseToCSR(A,AA,JA,IA,Nb_elem)
 
     do k=0,10
@@ -35,7 +35,7 @@ Subroutine JacobiCSR(A,b,x,t)
        end do
        X=Xnext
     end do
-    
+
     deallocate(AA,IA,JA)
 
   end subroutine JacobiCSR
@@ -77,9 +77,9 @@ subroutine multi_matCSR(FF,B,F,N)
       integer :: i,j,k,l, Nb_elem, Nb_li
       real*8::res
 
-      
+
       call NbrElemt(B,Nb_elem,Nb_li)
-      Allocate(AA(1:Nb_elem), JA(1:Nb_elem),IA(1:Nb_li+1)) 
+      Allocate(AA(1:Nb_elem), JA(1:Nb_elem),IA(1:Nb_li+1))
       call DenseToCSR(B,AA,JA,IA, Nb_elem)
 
 
@@ -92,7 +92,7 @@ subroutine multi_matCSR(FF,B,F,N)
          end do
          FF(i)=res
       end do
-      
+
       deallocate(AA,JA,IA)
  end subroutine multi_matCSR
 
@@ -105,8 +105,8 @@ subroutine GPOCSR(A,b,x,t)
     real*8,dimension(t)::r,z
     real*8:: alpha,eps,nume,denom,max
     integer :: k, kmax,i
-    
-    
+
+
     call multi_matCSR(r,A,x,t)
     r=b-r
 
