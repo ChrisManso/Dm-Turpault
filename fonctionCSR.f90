@@ -12,11 +12,9 @@ Subroutine JacobiCSR(A,b,x,t)
     real*8,dimension(t),intent(inout)::x
     real*8,dimension(t)::d,Xnext
     integer ::i,j,k,l,m, Nb_elem,Nb_li
-<<<<<<< HEAD
-    real*8::sum,diag
-=======
+
     real*8::sigma,diag
->>>>>>> 8e4d9f95f552931612faec3006ca168ec74ad284
+
 
     call NbrElemt(A,Nb_elem,Nb_li)
     Allocate(AA(1:Nb_elem), JA(1:Nb_elem),IA(1:Nb_li+1))

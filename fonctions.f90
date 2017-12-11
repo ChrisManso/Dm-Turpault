@@ -13,7 +13,7 @@ contains
     integer ::i,j,k
     real*8::sigma
 
-    do k=0,5
+    do k=0,100
        do i=1,t
           sigma=0.
           do j=1,t
@@ -78,6 +78,7 @@ contains
        k=k+1
        call write(k,sqrt(sum(r*r)),"GPOpti.txt")
     end do
+
   end subroutine GPO
 
 
@@ -92,7 +93,7 @@ contains
     real*8:: alpha,eps,nume,denom,max
     integer :: k, kmax,i
 
-    kmax=50
+    kmax=100
     eps=0.1
     nume=0.
     denom=0.
@@ -123,6 +124,7 @@ contains
        k=k+1
        call write(k,sqrt(sum(r*r)),"ResMin.txt")
     end do
+
   end subroutine residu
 
 
@@ -145,16 +147,16 @@ contains
       M(i,i)=A(i,i)
       q(i)=r(i)*M(i,i)
     end do
+
     nume=0.
     denom=0.
     k=0
-    kmax=10
+    kmax=100
     eps=0.1
     max=abs(sum(r*r))
     do while((k<kmax .and.  max>eps))
 
       call multi_mat(w,A,q,t)
-
 
       do i=1,t
          z(i)=w(i)*M(i,i)
@@ -165,7 +167,6 @@ contains
       end do
 
       alpha=nume/denom
-
       x=x+alpha*q
       r=r-alpha*w
 
@@ -178,6 +179,7 @@ contains
          end if
 
     end do
+
   end subroutine precon_residu_Jacobi
 
 
@@ -196,6 +198,9 @@ contains
     r=b-r
     m=0.
 
+    E=0.
+    D=0.
+    F=0.
     do i=1,t
       do j=1,t
         if (i==j) then
@@ -209,8 +214,8 @@ contains
       end do
     end do
 
-    M=matmul(matmul((D-0.5*E),transpose(D)),(D-0.5*F))  !! construction du préconditionneur
 
+    M=matmul(matmul((D-0.5*E),transpose(D)),(D-0.5*F))  !! construction du préconditionneur
 
     call cholesky(t,M,L,L2)
     call reso(t,L,L2,r,q)
@@ -245,6 +250,7 @@ contains
          end if
 
     end do
+
   end subroutine precon_residu_SSOR
 
 
