@@ -36,17 +36,17 @@ program main
 
 
 !!! Exemple d'utilisation de la fonctions DenseToCSR
-Test(1,:)=(/12.,4.,0.,0./)
-Test(2,:)=(/0.,7.,9.,-3./)
-Test(3,:)=(/1.,0.,5.,3.4/)
-Test(4,:)=(/0.,0.,-3.9,1./)
-call NbrElemt(Test,nelmt,nlines)
-print*,nelmt,nlines
-allocate (AA(1:nelmt),JA(1:nelmt),IA(1:nlines+1))
-call DenseToCSR(Test,AA,JA,IA,nelmt)
-print*, "AA vaut",AA
-print*, "JA vaut",JA
-print*, "IA vaut",IA
+!!!Test(1,:)=(/12.,4.,0.,0./)
+!!!Test(2,:)=(/0.,7.,9.,-3./)
+! Test(3,:)=(/1.,0.,5.,3.4/)
+! Test(4,:)=(/0.,0.,-3.9,1./)
+! call NbrElemt(Test,nelmt,nlines)
+! print*,nelmt,nlines
+! allocate (AA(1:nelmt),JA(1:nelmt),IA(1:nlines+1))
+! call DenseToCSR(Test,AA,JA,IA,nelmt)
+! print*, "AA vaut",AA
+! print*, "JA vaut",JA
+! print*, "IA vaut",IA!
 
   Id=reshape((/1,((0,i=1,2),1,j=1,1)/),(/t,t/))
   A=alpha*Id+ matmul(transpose(G),G)
@@ -78,12 +78,14 @@ print*, "IA vaut",IA
 
   call JacobiCSR(A,b,x,t)
 
-  print*,"jacobi : ",x
+  print*,"jacobi en CRS: ",x
 
   call GMRes(A,b,x,t)
 
   print*, "GMres : ", x
 
+  call GPOCSR(A,b,x,t)
+  print*, "GPO avec CRS: ", x 
 
   A1(1,1)=2
   A1(1,2)=12
