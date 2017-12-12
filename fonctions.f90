@@ -104,7 +104,7 @@ print*,"GPO = ", max,k
     integer :: k, kmax,i
 
     kmax=10000
-    eps=0.0000001
+    eps=0.00001
     nume=0.
     denom=0.
     alpha=0.
@@ -560,6 +560,24 @@ end subroutine mat_rot
     end subroutine write
 
 
+
+
+    function wtime ( )
+
+    implicit none
+
+      integer ( kind = 4 ) clock_max
+      integer ( kind = 4 ) clock_rate
+      integer ( kind = 4 ) clock_reading
+      real ( kind = 8 ) wtime
+
+      call system_clock ( clock_reading, clock_rate, clock_max )
+
+      wtime = real ( clock_reading, kind = 8 ) &
+            / real ( clock_rate, kind = 8 )
+
+      return
+    end
 
 
 

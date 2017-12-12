@@ -16,7 +16,7 @@ program main
   real*8,dimension(:),allocatable::AA
   integer,dimension(:),allocatable::JA,IA
   real*8,dimension(4,4)::Test
-  real*8::nombre
+  real*8::nombre,t1,t2
 
 !!! Exemple d'uitilisation des fonctions NbrMat et readMat
   ! nlen=len('matrix/bcsstk18.mtx')
@@ -61,38 +61,50 @@ program main
   b=b/sqrt(sum(b*b))
   x=1.
 
-
+  t1= wtime ( )
   call GPO(A,b,x,t)
+  t2= wtime ( )
+  print*,"temps de GPO =",t2-t1
 
   !!print*,"GPO : ",x
   x=1.
 
+t1= wtime ( )
   call residu(A,b,x,t) !! celle ci non plus
-
+t2=wtime ( )
+print*,"temps residu =",t2-t1
   !!print*,"residu : ",x
 
   x=1.
 
-  call precon_residu_SSOR(A,b,x,t) !! celle ci non plus
-
+t1= wtime ( )
+  call precon_residu_SSOR(A,b,x,t)
+t2=wtime ( )
+print*,"temps de precon_residu_SSOR =",t2-t1
   !!print*,"precon_residu_SSOR : ",x
 
   x=1.
 
-  call precon_residu_Jacobi(A,b,x,t) !! celle ci non plus
-
+t1= wtime ( )
+  call precon_residu_Jacobi(A,b,x,t)
+t2=wtime ( )
+print*,"temps de precon_residu_Jacobi = ",t2-t1
   !!print*,"precon_residu_Jacobi : ",x
 
   x=1.
 
-  call precon_residu_droite_Jacobi(A,b,x,t) !! celle ci non plus
-
+t1= wtime ( )
+  call precon_residu_droite_Jacobi(A,b,x,t)
+t2=wtime ( )
+print*,"temps de precon_residu_droite_Jacobi =",t2-t1
   !!print*,"precon_residu_droite_Jacobi : ",x
 
   x=1.
 
-  call Jacobi(A,b,x,t) !! pas sur qu'elle marche cette méthode..
-
+t1= wtime ( )
+  call Jacobi(A,b,x,t)
+t2=wtime ( )
+print*,"temps de jacobi=",t2-t1
   !!print*,"Jacobi : ",x
 
   x=1.
