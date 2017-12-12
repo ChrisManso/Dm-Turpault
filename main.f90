@@ -41,7 +41,7 @@ program main
 
 
   !!! Création de la matrice An
-    t=6 !/!\ choisie la dimension
+    t=50 !/!\ choisie la dimension
 
     Allocate(x(1:t),b(1:t),A(1:t,1:t),G(1:t,1:t),Id(1:t,1:t))
     alpha=1
@@ -56,7 +56,7 @@ program main
   A=alpha*Id+ matmul(transpose(G),G)
 
 
-
+  b=1.
 
   b=b/sqrt(sum(b*b))
   x=1.
@@ -64,42 +64,42 @@ program main
 
   call GPO(A,b,x,t)
 
-  print*,"GPO : ",x
+  !!print*,"GPO : ",x
   x=1.
 
   call residu(A,b,x,t) !! celle ci non plus
 
-  print*,"residu : ",x
+  !!print*,"residu : ",x
 
   x=1.
 
   call precon_residu_SSOR(A,b,x,t) !! celle ci non plus
 
-  print*,"precon_residu_SSOR : ",x
+  !!print*,"precon_residu_SSOR : ",x
 
   x=1.
 
   call precon_residu_Jacobi(A,b,x,t) !! celle ci non plus
 
-  print*,"precon_residu_Jacobi : ",x
+  !!print*,"precon_residu_Jacobi : ",x
 
   x=1.
 
   call precon_residu_droite_Jacobi(A,b,x,t) !! celle ci non plus
 
-  print*,"precon_residu_droite_Jacobi : ",x
+  !!print*,"precon_residu_droite_Jacobi : ",x
 
   x=1.
 
   call Jacobi(A,b,x,t) !! pas sur qu'elle marche cette méthode..
 
-  print*,"Jacobi : ",x
+  !!print*,"Jacobi : ",x
 
   x=1.
 
   call JacobiCSR(A,b,x,t)
 
-  print*,"jacobi en CRS: ",x
+  !!print*,"jacobi en CRS: ",x
 
   !!call GMRes(A,b,x,t)
 
