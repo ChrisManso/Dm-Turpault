@@ -79,13 +79,19 @@ program main
   call JacobiCSR(A,b,x,t)
 
   print*,"jacobi en CRS: ",x
+  
+    
+  x=1.
+
+  call GPOCSR(A,b,x,t)
+  print*, "GPO avec CRS: ", x 
+
+  
+  x=1.
 
   call GMRes(A,b,x,t)
 
   print*, "GMres : ", x
-
-  call GPOCSR(A,b,x,t)
-  print*, "GPO avec CRS: ", x 
 
   A1(1,1)=2
   A1(1,2)=12
@@ -102,6 +108,9 @@ program main
   !!print*,"je suis Q ",Q
   !!print*,"je suis R:",R
   A2=matmul(Q,R)
+  do i=1,3
+    print*, R(i,:)
+  end do 
 
 
   deallocate(AA,JA,IA)
