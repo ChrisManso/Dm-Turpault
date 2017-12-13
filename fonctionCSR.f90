@@ -179,7 +179,7 @@ print*,"residu = ",max,k
     do i=1,j
        q=q+h(i,j)*v(i,:)
     end do
-    call multi_mat(AA,JA,IA,v(j,:),z,t)
+    call multi_matCSR(AA,JA,IA,v(j,:),z,t)
 
     z=Z-q
     H(j+1,j)=sqrt(sum(z*z))
@@ -196,7 +196,7 @@ end subroutine ArnoldiCSR
 
 subroutine multi_matCSR(AA,JA,IA,F,AF,t)
       integer,intent(in)::t
-      real*8,dimension(t),intent(out)::FF
+      real*8,dimension(t),intent(out)::AF
       real*8,dimension(t),intent(in)::F
       real*8,dimension(:),intent(in)::AA
       integer,dimension(:),intent(in)::JA
@@ -211,7 +211,7 @@ subroutine multi_matCSR(AA,JA,IA,F,AF,t)
          do j=k,l
             res=res+AA(j)*F(JA(j))
          end do
-         FF(i)=res
+         AF(i)=res
       end do
 
  end subroutine multi_matCSR

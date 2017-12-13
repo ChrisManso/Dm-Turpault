@@ -109,7 +109,7 @@ print*,"temps de jacobi=",t2-t1
 
   x=1.
 
-  call JacobiCSR(A,b,x,t)
+  call JacobiCSR(AA,JA,IA,b,x,t)
 
   !!print*,"jacobi en CRS: ",x
 
