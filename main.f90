@@ -109,7 +109,7 @@ print*,"temps de jacobi=",t2-t1
 
   x=1.
 
-  call JacobiCSR(AA,JA,IA,b,x,t)
+  !!call JacobiCSR(AA,JA,IA,b,x,t)
 
   !!print*,"jacobi en CRS: ",x
 
@@ -135,6 +135,7 @@ print*,"temps de jacobi=",t2-t1
   !!!print*,"je suis Q ",Q
   !!!print*,"je suis R:",R
   A2=matmul(Q,R)
+
 
 
   !deallocate(AA,JA,IA)
