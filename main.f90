@@ -16,6 +16,7 @@ program main
   real*8,dimension(:),allocatable::AA
   integer,dimension(:),allocatable::JA,IA
   real*8,dimension(4,4)::Test
+  real*8::nombre,t1,t2
 
 !!! Exemple d'uitilisation des fonctions NbrMat et readMat
   ! nlen=len('matrix/bcsstk18.mtx')
@@ -40,16 +41,15 @@ program main
 
 
   !!! Création de la matrice An
-
-
-    t=5  !/!\ choisie la dimension
-
+    t=50 !/!\ choisie la dimension
 
     Allocate(x(1:t),b(1:t),A(1:t,1:t),G(1:t,1:t),Id(1:t,1:t))
     alpha=1.
+
     do i=1,t
        do j=1,t
-          G(i,j)=rand(1)
+         call random_number(nombre)
+          G(i,j)=nombre/5
        end do
     end do
 
@@ -57,38 +57,55 @@ program main
   A=alpha*Id+ matmul(transpose(G),G)
 
 
-
   b=1.
   b=b/sqrt(sum(b*b))
   x=1.
 
-
+  t1= wtime ( )
   call GPO(A,b,x,t)
+  t2= wtime ( )
+  print*,"temps de GPO =",t2-t1
 
-  print*,"GPO : ",x
+  !!print*,"GPO : ",x
   x=1.
 
+t1= wtime ( )
   call residu(A,b,x,t) !! celle ci non plus
-
-  print*,"residu : ",x
+t2=wtime ( )
+print*,"temps residu =",t2-t1
+  !!print*,"residu : ",x
 
   x=1.
 
-  call precon_residu_Jacobi(A,b,x,t)
-  print*,"precon_residu_Jacobi : ",x
-  x=1.
-
+t1= wtime ( )
   call precon_residu_SSOR(A,b,x,t)
-  print*,"precon_residu_SSOR : ",x
+t2=wtime ( )
+print*,"temps de precon_residu_SSOR =",t2-t1
+  !!print*,"precon_residu_SSOR : ",x
+
   x=1.
 
+t1= wtime ( )
+  call precon_residu_Jacobi(A,b,x,t)
+t2=wtime ( )
+print*,"temps de precon_residu_Jacobi = ",t2-t1
+  !!print*,"precon_residu_Jacobi : ",x
+
+  x=1.
+
+t1= wtime ( )
   call precon_residu_droite_Jacobi(A,b,x,t)
-  print*,"precon_residu_droite_Jacobi: ",x
+t2=wtime ( )
+print*,"temps de precon_residu_droite_Jacobi =",t2-t1
+  !!print*,"precon_residu_droite_Jacobi : ",x
+
   x=1.
 
-  call Jacobi(A,b,x,t) !! pas sur qu'elle marche cette méthode..
-
-  print*,"Jacobi : ",x
+t1= wtime ( )
+  call Jacobi(A,b,x,t)
+t2=wtime ( )
+print*,"temps de jacobi=",t2-t1
+  !!print*,"Jacobi : ",x
 
   x=1.
 
@@ -96,11 +113,11 @@ program main
 
   !!print*,"jacobi en CRS: ",x
 
-  !call GMRes(A,b,x,t)
+  !!call GMRes(A,b,x,t)
 
   !!print*, "GMres : ", x
 
-  !call GPOCSR(A,b,x,t)
+  !!call GPOCSR(A,b,x,t)
   !!print*, "GPO avec CRS: ", x
 
   A1(1,1)=2.
