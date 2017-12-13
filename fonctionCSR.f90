@@ -3,24 +3,32 @@ use fonctions
 use CSRconvert
 contains
 
-Subroutine JacobiCSR(A,b,x,t)
+Subroutine JacobiCSR(AA,JA,IA,b,x,t)
     integer,intent(in)::t !!taille des matrices
-    real*8,dimension(t,t),intent(in)::A
-    real*8,dimension(t),intent(in)::b
-    real*8,dimension(:),allocatable::AA
-    integer,dimension(:),allocatable::JA,IA
-    real*8,dimension(t),intent(inout)::x
-    real*8,dimension(t)::d,Xnext
-    integer ::i,j,k,l,m, Nb_elem,Nb_li
 
-    real*8::sigma,diag
+    real*8,dimension(t),intent(in)::b
+    real*8,dimension(:),allocatable,intent(in)::AA
+    integer,dimension(:),allocatable,intent(in)::JA,IA
+    real*8,dimension(t),intent(inout),intent(in)::x
+    real*8,dimension(t)::d,Xnext,r
+    integer ::i,j,k,l,m, Nb_elem,Nb_li,kmax,max
+
+    real*8::sigma,diag,epsn,norme
 
 
     call NbrElemt(A,Nb_elem,Nb_li)
     Allocate(AA(1:Nb_elem), JA(1:Nb_elem),IA(1:Nb_li+1))
     call DenseToCSR(A,AA,JA,IA,Nb_elem)
 
-    do k=0,10
+
+    call multi_matCSR(r,AA,IA,JA,x,t)
+    r=b-r
+    max=abs(sum(r*r))
+    kmax=1000
+    eps=0.00001
+    k=0
+    xnext=0.
+    do while (k<kmax .and. max>eps)
        do i=1,t
           sigma=0.
           diag=0.
@@ -36,6 +44,13 @@ Subroutine JacobiCSR(A,b,x,t)
          Xnext(i)=(b(i)-sigma)/diag
        end do
        X=Xnext
+       call multi_mat(r,AA,IA,JA,x,t)
+       r=b-r
+       norme=abs(sum(r*r))
+       if (norme)<max) then
+          max=norme
+       end if
+       k=k+1
     end do
 
     deallocate(AA,IA,JA)
@@ -80,89 +95,88 @@ subroutine GPOCSR(A,b,x,t)
     real*8,dimension(t),intent(in)::b
     real*8,dimension(t),intent(inout)::x
     real*8,dimension(t)::r,z
-    real*8:: alpha,eps,nume,denom,max
+    real*8:: alpha,eps,nume,denom,max,norme
     integer :: k, kmax,i
 
 
-    call multi_matCSR(r,A,x,t)
+    call multi_matCSR(r,AA,IA,JA,x,t)
     r=b-r
 
     k=0
-    kmax=5
-    eps=0.1
+    kmax=100
+
     nume=0.
     denom=0.
     alpha=0.
     z=0.
-    do i=0,t
-       if (abs(r(i))>max) then
-          max=abs(r(i))
-       end if
-    end do
+    eps=0.0000001
+
+    max= abs(sum(r*r))
     do while (k<kmax .and. max>eps)
-       call multi_matCSR(z,A,r,t)
+       call multi_mat(z,A,r,t)
 
        do i=1,t
           nume=nume+r(i)**2
           denom=denom+z(i)*r(i)
        end do
+
        alpha = nume/denom
 
        x=x+alpha*r
        r=r-alpha*z
 
-       do i=0,t
-          if (abs(r(i))>max) then
-             max=abs(r(i))
-          end if
-       end do
+       norme=abs(sum(r*r))
+        if (norme<max) then
+           max=norme
+        end if
+
        k=k+1
        call write(k,sqrt(sum(r*r)),"GPOpti.txt")
     end do
+print*,"GPO = ", max,k
   end subroutine GPOCSR
 
 subroutine residuCSR(A,b,x,t)
-    integer,intent(in)::t !!taille des matrices
-    real*8,dimension(t,t),intent(in)::A
-    real*8,dimension(t),intent(in)::b
-    real*8,dimension(t),intent(inout)::x
-    real*8,dimension(t)::r,z
-    real*8:: alpha,eps,nume,denom,max
-    integer :: k, kmax,i
+  integer,intent(in)::t !!taille des matrices
+  real*8,dimension(t,t),intent(in)::A
+  real*8,dimension(t),intent(in)::b
+  real*8,dimension(t),intent(inout)::x
+  real*8,dimension(t)::r,z
+  real*8:: alpha,eps,nume,denom,max,norme
+  integer :: k, kmax,i
 
-    kmax=5
-    eps=0.1
-    nume=0.
-    denom=0.
-    alpha=0.
-    z=0.
-    Call multi_matCSR(r,A,x,t)
-    r=b-r
-    max=0
-    k=0
-    do i=0,t
-       if (abs(r(i))>max) then
-          max=r(i)
-       end if
-    end do
+  kmax=10000
+  eps=0.00001
+  nume=0.
+  denom=0.
+  alpha=0.
+  z=0.
+  Call multi_matCSR(r,AA,JA,IA,x,t)
 
-    do while (k<kmax .and.  max>eps)
-       call multi_matCSR(z,A,r,t)
-       do i=1,t
-          nume=nume+r(i)*z(i)
-          denom=denom+z(i)*z(i)
-       end do
-       alpha=nume/denom
+  r=b-r
+  max=0
+  k=0
+  max=abs(sum(r*r))
 
-       x=x+alpha*r
-       r=r-alpha*z
-       do i=0,t
-          if (abs(r(i))>max) then
-             max=r(i)
-          end if
-       end do
-       k=k+1
-    end do
+  do while (k<kmax .and.  max>eps)
+     call multi_mat(z,A,r,t)
+     do i=1,t
+        nume=nume+r(i)*z(i)
+        denom=denom+z(i)*z(i)
+     end do
+     alpha=nume/denom
+
+     x=x+alpha*r
+     r=r-alpha*z
+     norme=abs(sum(r*r))
+        if (norme<max) then
+           max=norme
+        end if
+
+     k=k+1
+     call write(k,sqrt(sum(r*r)),"ResMin.txt")
+  end do
+print*,"residu = ",max,k
   end subroutine residuCSR
 
 

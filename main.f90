@@ -136,6 +136,7 @@ print*,"temps de jacobi=",t2-t1
   !!!print*,"je suis R:",R
   A2=matmul(Q,R)
 
+call readMat2("bcsstk18.mtx",A)
 
   !deallocate(AA,JA,IA)
   deallocate(x,b,A,G,Id)
