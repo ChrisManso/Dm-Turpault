@@ -41,7 +41,9 @@ program main
 
 
   !!! Création de la matrice An
-    t=50 !/!\ choisie la dimension
+    t=5
+
+     !/!\ choisie la dimension
 
     Allocate(x(1:t),b(1:t),A(1:t,1:t),G(1:t,1:t),Id(1:t,1:t))
     alpha=1
@@ -95,12 +97,6 @@ program main
 
   !!print*,"Jacobi : ",x
 
-  x=1.
-
-  call JacobiCSR(A,b,x,t)
-
-  print*,"jacobi en CRS: ",x
-
 
   x=1.
 
@@ -108,11 +104,20 @@ program main
   print*, "GPO avec CRS: ", x
 
 
+    x=1.
+
+
+
+      call GMRes(A,b,x,t)
+
+      print*, "GMres : ", x
+
   x=1.
+  call JacobiCSR(A,b,x,t)
 
-  !!call GMRes(A,b,x,t)
+  print*,"jacobi en CRS: ",x
 
-  !!print*, "GMres : ", x
+
 
   A1(1,1)=2
   A1(1,2)=12
@@ -130,8 +135,13 @@ program main
   !!!print*,"je suis R:",R
   A2=matmul(Q,R)
   do i=1,3
-    print*, R(i,:)
+    print*, A1(i,:)
   end do
+  print*,"fuck you"
+  do i=1,3
+    print*, A2(i,:)
+  end do
+
 
 
   !deallocate(AA,JA,IA)

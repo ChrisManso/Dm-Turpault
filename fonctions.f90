@@ -330,30 +330,32 @@ print*,"precon_residu_SSOR = ",max,k
     integer,intent(in)::t !!taille des matrices
     real*8,dimension(t,t),intent(in)::A
     real*8,dimension(t+1,t)::v
-    real*8,dimension(t+1,t),intent(out)::H
+    real*8,dimension(t+1,t),intent(out)::h
     real*8,dimension(t),intent(in)::r
     real*8,dimension(t), intent(out)::vm
     real*8,dimension(t)::z,q,z1
-    integer :: i,j,k
+    integer :: i,j
 
     v(1,:)=r/sqrt(sum(r*r))   !! sqrt(sum(v*v)) revient à faire la norme :)
-
+    h=0.d0
+    vm=0.d0
     do j=1,t
     z1 = matmul(A,v(j,:))
     do i=1,j
           h(i,j)=dot_product(z1,v(i,:))   !!fait le produit scalaire (à mettre de partout peut etre)
           z1=z1-h(i,j)*v(i,:)
-       end do
+    end do
 !     q=0.
 !     do k=1,j
 !       q = q + h(i,j)*v(k,:)
 !     end do
 !     z=0.
     h(j+1,j)=sqrt(sum(z1*z1))
-    if (h(j+1,j)==0) then
+    if (h(j+1,j)==0.) then
        stop
     end if
     v(j+1,:)=z1/h(j+1,j)
+    print*,"coucou"
     vm=v(j+1,:)
     end do
 
@@ -367,9 +369,9 @@ end subroutine
     real*8,dimension(t),intent(in)::b
     real*8,dimension(t),intent(inout)::x
     real*8,dimension(t)::e,r,z,Vm,sol,y,G
-    real*8,dimension(t,t)::H,Q,L,L2,Rm,jdr
+    real*8,dimension(t,t)::Q,L,L2,Rm,H,Mul
     real*8,dimension(t+1,t) :: Hm
-    real*8, dimension(t) :: v
+    real*8,dimension(t) :: v
     real*8:: alpha,eps,nume,denom,beta,som
     integer :: k, kmax,i,ui,uj
 
@@ -380,14 +382,12 @@ end subroutine
     beta=sqrt(sum(r*r))
     k=0
     kmax=10
-    eps=0.001
-    
+    eps=0.01
     do while(beta>eps .and. k<kmax)
+      Vm=0.
        call Arnoldi(A,r,Hm,v,t)
        H=Hm(1:t,:)
-       Vm=v(1:t)
-       Rm=0.
-       Q=0.
+       Vm=v
        call givens(H,t,Q,Rm) !! decompostion QR de H
        !! on va calculer argmin
        G=beta * matmul(transpose(Q),e)
@@ -395,29 +395,32 @@ end subroutine
 !        L=0.
 !        L2=0.
 !        call cholesky(t,Rm,L,L2) !! resolution du systeme Rny=Gn
-!        do ui=1,2
-!         print*, jdr(i,:)
-!        end do
+      Mul=matmul(Q,Rm)
+       do ui=1,t
+        print*, Mul(ui,:)
+       end do
+       print*,"ouioui"
+       do ui=1,t
+        print*, vm
+       end do
 !        print*,"oui oui"
         !print*, size(h)
-       print*, "oui oui"
         y(t) = G(t)/Rm(t,t)
         do ui=t-1,1,-1
           som=0.
           do uj=ui+1,t
-            som = som+G(uj)*Rm(uj,ui)
+            som = som+Rm(ui,uj)*y(uj)
           end do
           y(ui) = (G(ui)-som)/Rm(ui,ui)
        end do
        r = beta*e-matmul(H,y)
-       y = sqrt(sum(y*y))
-       x = x+y*Vm
+       x = x+sum(y*Vm)
        beta = sqrt(sum(r*r))
        k = k+1
     end do
 
     if (k>kmax) then
-       !print*, 'tolérence non atteinte', beta
+       print*, 'tolérence non atteinte', beta
     end if
 
   end subroutine GMRes
@@ -460,10 +463,11 @@ end subroutine
   if (R(n,n)<0)then
      R(n,n)=-R(n,n)
 
-     Q(:,2)=-Q(:,2)
+     Q(:,n)=-Q(:,n)
   end if
 
   end subroutine givens
+
 
 subroutine mat_rot(t,i,j,c,s,M)
   integer,intent(in)::i,j,t
