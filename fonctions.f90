@@ -140,6 +140,7 @@ print*,"residu = ",max,k
 
 
 
+!!! Preconditionneur 
 
   subroutine precon_residu_Jacobi(A,b,x,t)  !!M-1Ax=M-1B aevc M diagonale
     integer,intent(in)::t !!taille des matrices
