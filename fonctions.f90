@@ -275,18 +275,17 @@ print*,"precon_residu_SSOR = ",max,k
    real*8,dimension(t),intent(in)::b
    real*8,dimension(t),intent(inout)::x
    real*8,dimension(t,t)::M
-   real*8,dimension(t)::r,z,q,w
-   real*8:: alpha,eps,nume,denom,max
+   real*8,dimension(t)::r,z,q,w,u
+   real*8:: alpha,eps,nume,denom,max,norme
    integer :: k, kmax,i
    M=0.
    do i=1,t
      M(i,i)=A(i,i)
-
-     z(i)=x(i)*M(i,i)
    end do
-
-   call multi_mat(r,matmul(A,transpose(M)),z,t)
-   r=b-r
+   u=0.
+   u= matmul(M,x)
+   r=0.
+   r=b-matmul(A,matmul(transpose(M),u))
 
    nume=0.
    denom=0.
@@ -299,7 +298,7 @@ print*,"precon_residu_SSOR = ",max,k
 
 
    do while((k<kmax .and.  max>eps))
-
+     z=0.
      !!resoudre Mz=r
      do i=1,t
         z(i)=r(i)*M(i,i)
@@ -318,9 +317,9 @@ print*,"precon_residu_SSOR = ",max,k
      r=r-alpha*w
      k=k+1
 
-
-    if (abs(sum(r*r))<max) then
-        max=abs(sum(r*r))
+     norme=abs(sum(r*r))
+    if (norme<max) then
+        max=norme
     end if
 
    end do
@@ -328,7 +327,83 @@ print*,"precon_residu_SSOR = ",max,k
 
  end subroutine precon_residu_droite_Jacobi
 
+ subroutine precon_residu_droite_SSOR(A,b,x,t)
+   integer,intent(in)::t !!taille des matrices
+   real*8,dimension(t,t),intent(in)::A
+   real*8,dimension(t),intent(in)::b
+   real*8,dimension(t),intent(inout)::x
+   real*8,dimension(t,t)::M,L,L2,D,E,F
+   real*8,dimension(t)::r,z,q,w,u
+   real*8:: alpha,eps,nume,denom,max,norme
+   integer :: k, kmax,i
+   M=0.
 
+   E=0.
+   D=0.
+   F=0.
+   do i=1,t
+     do j=1,t
+       if (i==j) then
+         D(i,j)=A(i,i)
+       else if (j<i) then
+         E(i,j)=-A(i,j)
+       else
+         F(i,j)=-A(i,j)
+       end if
+
+     end do
+   end do
+
+   M=matmul(matmul((D-0.8*E),transpose(D)),(D-0.8*F))  !! construction du préconditionneur
+
+
+   u=0.
+   u= matmul(M,x)
+   r=0.
+
+   call cholesky(t,M,L,L2)
+
+   call reso(t,L,L2,u,r)
+
+   r=b-matmul(A,u)
+
+   nume=0.
+   denom=0.
+   k=0
+
+   kmax=1000
+   eps=0.1
+
+   max=abs(sum(r*r))
+
+
+   do while((k<kmax .and.  max>eps))
+     
+     !!resoudre Mz=r
+     call reso(t,L,L2,r,z)
+
+      w=matmul(A,z)
+
+     do i=1,t
+        nume=nume+r(i)*w(i)
+        denom=denom+w(i)*w(i)
+     end do
+
+     alpha=nume/denom
+
+     x=x+alpha*z
+     r=r-alpha*w
+     k=k+1
+
+     norme=abs(sum(r*r))
+    if (norme<max) then
+        max=norme
+    end if
+
+   end do
+   print*,"precon_residu_droite_Jacobi = ",max,k
+
+ end subroutine precon_residu_droite_SSOR
 
 
 !!$!! ARNOLDI
