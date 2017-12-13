@@ -88,7 +88,8 @@ contains
        k=k+1
        call write(k,sqrt(sum(r*r)),"GPOpti.txt")
     end do
-print*,"GPO = ", max,k
+print*,"Pour GPO le residu vaut ", max
+print*,"il est atteint a l'iteration numero ",k
   end subroutine GPO
 
 
@@ -135,11 +136,13 @@ print*,"GPO = ", max,k
        k=k+1
        call write(k,sqrt(sum(r*r)),"ResMin.txt")
     end do
-print*,"residu = ",max,k
+    print*,"Pour ResiduMinimum le residu vaut ", max
+    print*,"il est atteint a l'iteration numero ",k
   end subroutine residu
 
 
 
+!!! Preconditionneur
 
   subroutine precon_residu_Jacobi(A,b,x,t)  !!M-1Ax=M-1B aevc M diagonale
     integer,intent(in)::t !!taille des matrices
@@ -191,7 +194,8 @@ print*,"residu = ",max,k
          end if
          call write(k,sqrt(sum(r*r)),"ResJac.txt")
     end do
-print*,"precon_residu_Jacobi = ",max,k
+print*,"Pour Residu preconditinné a gauche par jacobi le residu vaut ", max
+print*,"il est atteint a l'iteration numero ",k
   end subroutine precon_residu_Jacobi
 
 
@@ -265,7 +269,8 @@ print*,"precon_residu_Jacobi = ",max,k
          call write(k,sqrt(sum(r*r)),"ResSSO.txt")
     end do
 
-print*,"precon_residu_SSOR = ",max,k
+print*,"Pour Residu precontionne a gauche par SSOR le residu vaut ", max
+print*,"il est atteint a l'iteration numero ",k
   end subroutine precon_residu_SSOR
 
 
@@ -324,7 +329,8 @@ print*,"precon_residu_SSOR = ",max,k
     end if
 
    end do
-   print*,"precon_residu_droite_Jacobi = ",max,k
+   print*,"Pour Residu preconditionne a droit par Jacobi le residu vaut ", max
+   print*,"il est atteint a l'iteration numero ",k
 
  end subroutine precon_residu_droite_Jacobi
 
