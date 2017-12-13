@@ -342,35 +342,34 @@ contains
   subroutine Arnoldi(A,r,H,vm,t)
     integer,intent(in)::t !!taille des matrices
     real*8,dimension(t,t),intent(in)::A
-    real*8,dimension(t,t)::v
-    real*8,dimension(t,t),intent(out)::H
+    real*8,dimension(t+1,t)::v
+    real*8,dimension(t+1,t),intent(out)::h
     real*8,dimension(t),intent(in)::r
     real*8,dimension(t), intent(out)::vm
     real*8,dimension(t)::z,q,z1
     integer :: i,j
-    real*8::sum
 
     v(1,:)=r/sqrt(sum(r*r))   !! sqrt(sum(v*v)) revient à faire la norme :)
-
+    h=0.d0
+    vm=0.d0
     do j=1,t
-
-      do i=1,j
-        call multi_mat(z1,A,v(j,:),t)
-        h(i,j)=dot_product(z1,v(i,:))  !!fait le produit scalaire (à mettre de partout peut etre)
-      end do
-      q=0.
-      do i=1,j
-        q=q+h(i,j)*v(i,:)
-      end do
-      call multi_mat(z,A,v(j,:),t)
-
-      z=Z-q
-      H(j+1,j)=sqrt(sum(z*z))
-      if (H(j+1,j)==0) then
-        stop
-      end if
-      v(j+1,:)=z/H(j+1,j)
-      vm=v(j+1,:)
+    z1 = matmul(A,v(j,:))
+    do i=1,j
+          h(i,j)=dot_product(z1,v(i,:))   !!fait le produit scalaire (à mettre de partout peut etre)
+          z1=z1-h(i,j)*v(i,:)
+    end do
+!     q=0.
+!     do k=1,j
+!       q = q + h(i,j)*v(k,:)
+!     end do
+!     z=0.
+    h(j+1,j)=sqrt(sum(z1*z1))
+    if (h(j+1,j)==0.) then
+       stop
+    end if
+    v(j+1,:)=z1/h(j+1,j)
+    print*,"coucou"
+    vm=v(j+1,:)
     end do
 
   end subroutine
@@ -382,40 +381,59 @@ contains
     real*8,dimension(t,t),intent(in)::A
     real*8,dimension(t),intent(in)::b
     real*8,dimension(t),intent(inout)::x
-    real*8,dimension(t)::e,r,z,v,vm,sol,y
-    real*8,dimension(t,t)::H,Q,Rm,G,L,L2
-    real*8:: alpha,eps,nume,denom,max,beta
-    integer :: k, kmax,i
+    real*8,dimension(t)::e,r,z,Vm,sol,y,G
+    real*8,dimension(t,t)::Q,L,L2,Rm,H,Mul
+    real*8,dimension(t+1,t) :: Hm
+    real*8,dimension(t) :: v
+    real*8:: alpha,eps,nume,denom,beta,som
+    integer :: k, kmax,i,ui,uj
 
 
     e=0.
     e(1)=1.
-    call Multi_mat(z,A,x,t)
-    r=b-z
-
+    r=b-matmul(A,x)
     beta=sqrt(sum(r*r))
     k=0
+    kmax=10
     eps=0.01
     do while(beta>eps .and. k<kmax)
-      call arnoldi(A,r,H,vm,t)
-      call givens(H,t,Q,Rm) !! decompostion QR de H
-      !!$       !! on va calculer argmin
-      !!$       G=transpose(Q)*beta*e1
-      !!$
-      !!$       call cholesky(t,R,L,L2) !! resolution du systeme Rny=Gn
-      !!$       call solv(t,L,L2,G,y)
-      !!$       call Multi_mat(matmul(
-
-      call Multi_mat(sol,H,y,t)
-      y=sqrt(sum((beta*e-sol)**2))
-      x=x+r*y
-      r=y
-      beta=sqrt(sum(r*r))
-      k=k+1
+      Vm=0.
+       call Arnoldi(A,r,Hm,v,t)
+       H=Hm(1:t,:)
+       Vm=v
+       call givens(H,t,Q,Rm) !! decompostion QR de H
+       !! on va calculer argmin
+       G=beta * matmul(transpose(Q),e)
+!        print*,
+!        L=0.
+!        L2=0.
+!        call cholesky(t,Rm,L,L2) !! resolution du systeme Rny=Gn
+      Mul=matmul(Q,Rm)
+       do ui=1,t
+        print*, Mul(ui,:)
+       end do
+       print*,"ouioui"
+       do ui=1,t
+        print*, H(ui,:)
+       end do
+!        print*,"oui oui"
+        !print*, size(h)
+        y(t) = G(t)/Rm(t,t)
+        do ui=t-1,1,-1
+          som=0.
+          do uj=ui+1,t
+            som = som+Rm(ui,uj)*y(uj)
+          end do
+          y(ui) = (G(ui)-som)/Rm(ui,ui)
+       end do
+       r = beta*e-matmul(H,y)
+       x = x+sum(y*Vm)
+       beta = sqrt(sum(r*r))
+       k = k+1
     end do
 
     if (k>kmax) then
-      !print*, 'tolérence non atteinte', beta
+       print*, 'tolérence non atteinte', beta
     end if
 
   end subroutine GMRes
@@ -458,24 +476,25 @@ contains
     if (R(n,n)<0)then
       R(n,n)=-R(n,n)
 
-      Q(:,2)=-Q(:,2)
-    end if
+     Q(:,n)=-Q(:,n)
+  end if
 
   end subroutine givens
 
-  subroutine mat_rot(t,i,j,c,s,M)
-    integer,intent(in)::i,j,t
-    real*8,intent(in)::c,s
-    real*8,dimension(t,t)::M
-    integer::k
-    m=0.
-    do k=1,t
-      M(k,k)=1.
-    end do
-    M(i,i)=c
-    M(j,j)=c
-    M(i,j)=-s
-    M(j,i)=s
+
+subroutine mat_rot(t,i,j,c,s,M)
+  integer,intent(in)::i,j,t
+  real*8,intent(in)::c,s
+  real*8,dimension(t,t)::M
+  integer::k
+  m=0.
+  do k=1,t
+     M(k,k)=1.
+  end do
+  M(i,i)=c
+  M(j,j)=c
+  M(i,j)=-s
+  M(j,i)=s
 
 
   end subroutine mat_rot

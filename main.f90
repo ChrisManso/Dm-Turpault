@@ -42,12 +42,16 @@ program main
 
 
   !!! Création de la matrice An
-  alpha=1.
+    t=5
 
-  do i=1,t
-    do j=1,t
-      call random_number(nombre)
-      G(i,j)=nombre/real(t)    !--> cela permet que la matrice A soit a diagonale strictement dominante
+     !/!\ choisie la dimension
+
+    ! Allocate(x(1:t),b(1:t),A(1:t,1:t),G(1:t,1:t),Id(1:t,1:t))
+    alpha=1
+    do i=1,t
+       do j=1,t
+         call random_number(nombre)
+          G(i,j)=nombre/real(t)
     end do
   end do
 
@@ -82,6 +86,11 @@ program main
   t2=wtime ( )
   print*,"temps de jacobi=",t2-t1
   Print*," "
+
+  x=x0  !Réinitialisation du vecteur d'entré
+  call GMRes(A,b,x,t)
+  ! print*,"temps de jacobi=",t2-t1
+  Print*, "GMres : ", x
 
 
   ! x=x0  !Réinitialisation du vecteur d'entré
