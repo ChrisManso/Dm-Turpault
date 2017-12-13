@@ -44,7 +44,8 @@ program main
     t=50 !/!\ choisie la dimension
 
     Allocate(x(1:t),b(1:t),A(1:t,1:t),G(1:t,1:t),Id(1:t,1:t))
-    alpha=1
+    alpha=1.
+
     do i=1,t
        do j=1,t
          call random_number(nombre)
@@ -57,7 +58,6 @@ program main
 
 
   b=1.
-
   b=b/sqrt(sum(b*b))
   x=1.
 
