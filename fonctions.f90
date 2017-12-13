@@ -414,7 +414,7 @@ contains
        end do
        print*,"ouioui"
        do ui=1,t
-        print*, vm
+        print*, H(ui,:)
        end do
 !        print*,"oui oui"
         !print*, size(h)

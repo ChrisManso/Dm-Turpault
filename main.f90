@@ -46,7 +46,7 @@ program main
 
      !/!\ choisie la dimension
 
-    Allocate(x(1:t),b(1:t),A(1:t,1:t),G(1:t,1:t),Id(1:t,1:t))
+    ! Allocate(x(1:t),b(1:t),A(1:t,1:t),G(1:t,1:t),Id(1:t,1:t))
     alpha=1
     do i=1,t
        do j=1,t
@@ -86,6 +86,11 @@ program main
   t2=wtime ( )
   print*,"temps de jacobi=",t2-t1
   Print*," "
+
+  x=x0  !Réinitialisation du vecteur d'entré
+  call GMRes(A,b,x,t)
+  ! print*,"temps de jacobi=",t2-t1
+  Print*, "GMres : ", x
 
 
   ! x=x0  !Réinitialisation du vecteur d'entré
@@ -143,53 +148,6 @@ t2=wtime ( )
 print*,"temps de GPO au format CSR=",t2-t1
 Print*," "
 
-<<<<<<< HEAD
-
-  x=1.
-
-  call GPOCSR(A,b,x,t)
-  print*, "GPO avec CRS: ", x
-
-
-    x=1.
-
-
-
-      call GMRes(A,b,x,t)
-
-      print*, "GMres : ", x
-
-  x=1.
-  call JacobiCSR(A,b,x,t)
-
-  print*,"jacobi en CRS: ",x
-
-
-
-  A1(1,1)=2
-  A1(1,2)=12
-  A1(1,3)=-3
-  A1(2,1)=1
-  A1(2,2)=-6
-  A1(2,3)=-3
-  A1(3,1)=2
-  A1(3,2)=0
-  A1(3,3)=18
-
-
-  call givens(A1,3,Q,R) !! essai de givens
-  !!!print*,"je suis Q ",Q
-  !!!print*,"je suis R:",R
-  A2=matmul(Q,R)
-  do i=1,3
-    print*, A1(i,:)
-  end do
-  print*,"fuck you"
-  do i=1,3
-    print*, A2(i,:)
-  end do
-
-=======
 
 x=x0  !Réinitialisation du vecteur d'entré
 t1= wtime ( )
@@ -211,7 +169,6 @@ deallocate(AA,JA,IA,b,x,x0)
 
 
 
->>>>>>> d730848c6e82b278e1083f6fc15db8b777227b6e
 
 
 
