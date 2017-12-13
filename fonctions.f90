@@ -2,7 +2,7 @@ module fonctions
 
 contains
 
-!! JACOBI
+  !! JACOBI
   Subroutine Jacobi(A,b,x,t)
     integer,intent(in)::t !!taille des matrices
     real*8,dimension(t,t),intent(in)::A
@@ -13,38 +13,40 @@ contains
     integer ::i,j,k,kmax
     real*8::max,sigma, eps
 
+
     r=b-matmul(A,x)
     max=abs(sum(r*r))
-    kmax=1000
-    eps=0.0000001
+    kmax=10000
+    eps=0.01
     k=0
     xnext=0.
-      do while (k<kmax .and. max>eps)
-       do i=1,t
-          sigma=0.
-          do j=1,t
-             if (i/=j) then
-                sigma=sigma+A(i,j)*X(j)
-             end if
-          end do
+    do while (k<kmax .and. max>eps)
+      do i=1,t
+        sigma=0.
+        do j=1,t
+          if (i/=j) then
+            sigma=sigma+A(i,j)*X(j)
+          end if
+        end do
 
-          Xnext(i)=1./A(i,i)*(b(i)-sigma)
-       end do
-       X=Xnext
+        Xnext(i)=1./A(i,i)*(b(i)-sigma)
+      end do
+      X=Xnext
 
-       r=b-matmul(A,X)
+      r=b-matmul(A,X)
 
-       if (abs(SUM(r*r))<max) then
-          max=abs(sum(r*r))
-       end if
-       k=k+1
+      if (abs(SUM(r*r))<max) then
+        max=abs(sum(r*r))
+      end if
+      k=k+1
+      call write(k,sqrt(sum(r*r)),"Jacobi.txt")
     end do
-    call write(k,sqrt(sum(r*r)),"Jacobi.txt")
-    print*,"jacobi",max,k
+    print*,"Pour Jacobi le residu vaut ", max
+    print*,"il est atteint a l'iteration numero ",k
   end subroutine Jacobi
 
 
-!! GRADIENT A PAS OPTIMAL
+  !! GRADIENT A PAS OPTIMAL
   subroutine GPO(A,b,x,t)
     integer,intent(in)::t !!taille des matrices
     real*8,dimension(t,t),intent(in)::A
@@ -58,42 +60,42 @@ contains
     r=b-r
 
     k=0
-    kmax=100
-
+    kmax=10000
     nume=0.
     denom=0.
     alpha=0.
     z=0.
-    eps=0.0000001
+    eps=0.01
 
     max= abs(sum(r*r))
     do while (k<kmax .and. max>eps)
-       call multi_mat(z,A,r,t)
+      call multi_mat(z,A,r,t)
 
-       do i=1,t
-          nume=nume+r(i)**2
-          denom=denom+z(i)*r(i)
-       end do
+      do i=1,t
+        nume=nume+r(i)**2
+        denom=denom+z(i)*r(i)
+      end do
 
-       alpha = nume/denom
+      alpha = nume/denom
 
-       x=x+alpha*r
-       r=r-alpha*z
+      x=x+alpha*r
+      r=r-alpha*z
 
 
-        if (abs(SUM(r*r))<max) then
-           max=abs(sum(r*r))
-        end if
+      if (abs(SUM(r*r))<max) then
+        max=abs(sum(r*r))
+      end if
 
-       k=k+1
-       call write(k,sqrt(sum(r*r)),"GPOpti.txt")
+      k=k+1
+      call write(k,sqrt(sum(r*r)),"GPOpti.txt")
     end do
-print*,"GPO = ", max,k
+    print*,"Pour GPO le residu vaut ", max
+    print*,"il est atteint a l'iteration numero ",k
   end subroutine GPO
 
 
 
-!! RESIDU OPTIMAL
+  !! RESIDU OPTIMAL
   subroutine residu(A,b,x,t)
     integer,intent(in)::t !!taille des matrices
     real*8,dimension(t,t),intent(in)::A
@@ -103,8 +105,9 @@ print*,"GPO = ", max,k
     real*8:: alpha,eps,nume,denom,max
     integer :: k, kmax,i
 
+
     kmax=10000
-    eps=0.0000001
+    eps=0.01
     nume=0.
     denom=0.
     alpha=0.
@@ -117,28 +120,30 @@ print*,"GPO = ", max,k
     max=abs(sum(r*r))
 
     do while (k<kmax .and.  max>eps)
-       call multi_mat(z,A,r,t)
-       do i=1,t
-          nume=nume+r(i)*z(i)
-          denom=denom+z(i)*z(i)
-       end do
-       alpha=nume/denom
+      call multi_mat(z,A,r,t)
+      do i=1,t
+        nume=nume+r(i)*z(i)
+        denom=denom+z(i)*z(i)
+      end do
+      alpha=nume/denom
 
-       x=x+alpha*r
-       r=r-alpha*z
+      x=x+alpha*r
+      r=r-alpha*z
 
-          if (abs(sum(r*r))<max) then
-             max=abs(sum(r*r))
-          end if
+      if (abs(sum(r*r))<max) then
+        max=abs(sum(r*r))
+      end if
 
-       k=k+1
-       call write(k,sqrt(sum(r*r)),"ResMin.txt")
+      k=k+1
+      call write(k,sqrt(sum(r*r)),"ResMin.txt")
     end do
-print*,"residu = ",max,k
+    print*,"Pour ResiduMinimum le residu vaut ", max
+    print*,"il est atteint a l'iteration numero ",k
   end subroutine residu
 
 
 
+  !!! Preconditionneur
 
   subroutine precon_residu_Jacobi(A,b,x,t)  !!M-1Ax=M-1B aevc M diagonale
     integer,intent(in)::t !!taille des matrices
@@ -161,18 +166,19 @@ print*,"residu = ",max,k
     nume=0.
     denom=0.
     k=0
-    kmax=1000000
-    eps=0.00001
+    kmax=10000
+    eps=0.01
+
     max=abs(sum(r*r))
     do while((k<kmax .and.  max>eps))
 
       call multi_mat(w,A,q,t)
 
       do i=1,t
-         z(i)=w(i)*M(i,i)
+        z(i)=w(i)*M(i,i)
 
-         nume=nume+q(i)*z(i)
-         denom=denom+z(i)*z(i)
+        nume=nume+q(i)*z(i)
+        denom=denom+z(i)*z(i)
 
       end do
 
@@ -184,17 +190,18 @@ print*,"residu = ",max,k
       k=k+1
 
 
-         if (abs(sum(r*r))<max) then
-            max=abs(sum(r*r))
-         end if
-         call write(k,sqrt(sum(r*r)),"ResJac.txt")
+      if (abs(sum(r*r))<max) then
+        max=abs(sum(r*r))
+      end if
+      call write(k,sqrt(sum(r*r)),"ResJac.txt")
     end do
-print*,"precon_residu_Jacobi = ",max,k
+    print*,"Pour Residu preconditinné a gauche par jacobi le residu vaut ", max
+    print*,"il est atteint a l'iteration numero ",k
   end subroutine precon_residu_Jacobi
 
 
 
-  subroutine precon_residu_SSOR(A,b,x,t)  !!M-1Ax=M-1B aevc M=(D-wR)D-1(D-wF))
+  subroutine precon_residu_SSOR(A,b,x,t)  !!M-1Ax=M-1B avec M=(D-wR)D-1(D-wF))
     integer,intent(in)::t !!taille des matrices
     real*8,dimension(t,t),intent(in)::A
     real*8,dimension(t),intent(in)::b
@@ -233,8 +240,10 @@ print*,"precon_residu_Jacobi = ",max,k
     nume=0.
     denom=0.
     k=0
-    kmax=1000000
-    eps=0.00001
+
+    kmax=10000
+    eps=0.01
+
     max=abs(sum(r*r))
     do while((k<kmax .and.  max>eps))
       call multi_mat(w,A,q,t)
@@ -243,8 +252,8 @@ print*,"precon_residu_Jacobi = ",max,k
       call reso(t,L,L2,w,z)
 
       do i=1,t
-         nume=nume+q(i)*z(i)
-         denom=denom+z(i)*z(i)
+        nume=nume+q(i)*z(i)
+        denom=denom+z(i)*z(i)
 
       end do
 
@@ -255,77 +264,81 @@ print*,"precon_residu_Jacobi = ",max,k
       q=q-alpha*z
       k=k+1
 
-         if (abs(sum(r*r))<max) then
-            max=abs(sum(r*r))
-         end if
-         call write(k,sqrt(sum(r*r)),"ResSSO.txt")
+      if (abs(sum(r*r))<max) then
+        max=abs(sum(r*r))
+      end if
+      call write(k,sqrt(sum(r*r)),"ResSSO.txt")
     end do
 
-print*,"precon_residu_SSOR = ",max,k
+    print*,"Pour Residu precontionne a gauche par SSOR le residu vaut ", max
+    print*,"il est atteint a l'iteration numero ",k
   end subroutine precon_residu_SSOR
 
 
- subroutine precon_residu_droite_Jacobi(A,b,x,t)
-   integer,intent(in)::t !!taille des matrices
-   real*8,dimension(t,t),intent(in)::A
-   real*8,dimension(t),intent(in)::b
-   real*8,dimension(t),intent(inout)::x
-   real*8,dimension(t,t)::M
-   real*8,dimension(t)::r,z,q,w
-   real*8:: alpha,eps,nume,denom,max
-   integer :: k, kmax,i
-   M=0.
-   do i=1,t
-     M(i,i)=A(i,i)
+  subroutine precon_residu_droite_Jacobi(A,b,x,t)
+    integer,intent(in)::t !!taille des matrices
+    real*8,dimension(t,t),intent(in)::A
+    real*8,dimension(t),intent(in)::b
+    real*8,dimension(t),intent(inout)::x
+    real*8,dimension(t,t)::M
+    real*8,dimension(t)::r,z,q,w
+    real*8:: alpha,eps,nume,denom,max
+    integer :: k, kmax,i
+    M=0.
+    do i=1,t
+      M(i,i)=A(i,i)
 
-     z(i)=x(i)*M(i,i)
-   end do
+      z(i)=x(i)*M(i,i)
+    end do
 
-   call multi_mat(r,matmul(A,transpose(M)),z,t)
-   r=b-r
+    call multi_mat(r,matmul(A,transpose(M)),z,t)
+    r=b-r
 
-   nume=0.
-   denom=0.
-   k=0
-   kmax=1000000
-   eps=0.00001
-   max=abs(sum(r*r))
+    nume=0.
+    denom=0.
+    k=0
+
+    kmax=10000
+    eps=0.01
+
+    max=abs(sum(r*r))
 
 
-   do while((k<kmax .and.  max>eps))
+    do while((k<kmax .and.  max>eps))
 
-     !!resoudre Mz=r
-     do i=1,t
+      !!resoudre Mz=r
+      do i=1,t
         z(i)=r(i)*M(i,i)
       end do
 
       w=matmul(A,z)
 
-     do i=1,t
+      do i=1,t
         nume=nume+r(i)*w(i)
         denom=denom+w(i)*w(i)
-     end do
+      end do
 
-     alpha=nume/denom
+      alpha=nume/denom
 
-     x=x+alpha*z
-     r=r-alpha*w
-     k=k+1
+      x=x+alpha*z
+      r=r-alpha*w
+      k=k+1
 
 
-    if (abs(sum(r*r))<max) then
+      if (abs(sum(r*r))<max) then
         max=abs(sum(r*r))
-    end if
+      end if
 
-   end do
-   print*,"precon_residu_droite_Jacobi = ",max,k
+    end do
+    print*,"Pour Residu preconditionne a droit par Jacobi le residu vaut ", max
+    print*,"il est atteint a l'iteration numero ",k
 
- end subroutine precon_residu_droite_Jacobi
+  end subroutine precon_residu_droite_Jacobi
 
 
 
 
-!!$!! ARNOLDI
+  !!$!! ARNOLDI
   subroutine Arnoldi(A,r,H,vm,t)
     integer,intent(in)::t !!taille des matrices
     real*8,dimension(t,t),intent(in)::A
@@ -359,10 +372,10 @@ print*,"precon_residu_SSOR = ",max,k
     vm=v(j+1,:)
     end do
 
-end subroutine
+  end subroutine
 
 
-!!GMRes
+  !!GMRes
   subroutine GMRes(A,b,x,t)
     integer,intent(in)::t !!taille des matrices
     real*8,dimension(t,t),intent(in)::A
@@ -441,27 +454,27 @@ end subroutine
     G=0.
     Q=0.
     do k=1,t
-       Q(k,k)=1.
+      Q(k,k)=1.
     end do
 
     do j=1,t-1
-       do i=t,j+1,-1
-          l1=i !! ligne qu'on veut annuler
-          l2=i-1
+      do i=t,j+1,-1
+        l1=i !! ligne qu'on veut annuler
+        l2=i-1
 
-          Norme=sqrt(R(l1,j)**2+R(l2,j)**2)
+        Norme=sqrt(R(l1,j)**2+R(l2,j)**2)
 
-          call mat_rot(t,l1,l2,R(L2,j)/Norme,R(l1,j)/Norme,G)
-          !! on applique la rotation
-          R=matmul(G,R)
-          Q=matmul(Q,transpose(G))
+        call mat_rot(t,l1,l2,R(L2,j)/Norme,R(l1,j)/Norme,G)
+        !! on applique la rotation
+        R=matmul(G,R)
+        Q=matmul(Q,transpose(G))
 
-       end do
+      end do
     end do
     n=t-1
 
-  if (R(n,n)<0)then
-     R(n,n)=-R(n,n)
+    if (R(n,n)<0)then
+      R(n,n)=-R(n,n)
 
      Q(:,n)=-Q(:,n)
   end if
@@ -484,102 +497,119 @@ subroutine mat_rot(t,i,j,c,s,M)
   M(j,i)=s
 
 
-end subroutine mat_rot
+  end subroutine mat_rot
 
 
 
 
 
-!! MODULE COMPLEMENTAIRE
+  !! MODULE COMPLEMENTAIRE
 
-    subroutine multi_mat(FF,B,F,N)
-      integer,intent(in)::N
-      real*8,dimension(N),intent(out)::FF
-      real*8,dimension(N),intent(in)::F
-      real*8,dimension(N,N),intent(in)::B
-      integer :: i,j
-      real*8::res
+  subroutine multi_mat(FF,B,F,N)
+    integer,intent(in)::N
+    real*8,dimension(N),intent(out)::FF
+    real*8,dimension(N),intent(in)::F
+    real*8,dimension(N,N),intent(in)::B
+    integer :: i,j
+    real*8::res
 
-      do i=1,N
-         res=0.d0
-         do j=1,N
-            res=res+B(i,j)*F(j)
-         end do
-         FF(i)=res
+    do i=1,N
+      res=0.d0
+      do j=1,N
+        res=res+B(i,j)*F(j)
       end do
-    end subroutine multi_mat
+      FF(i)=res
+    end do
+  end subroutine multi_mat
 
 
-    subroutine cholesky(n,A,L,L2)
-      integer,intent(in)::n
-      real*8,dimension(n,n)::A,L,L2
-      integer::i,j,k
-      real*8 :: res,res2
+  subroutine cholesky(n,A,L,L2)
+    integer,intent(in)::n
+    real*8,dimension(n,n)::A,L,L2
+    integer::i,j,k
+    real*8 :: res,res2
 
-      L=0d0
-      L2=0d0
-      do i=1,n
-         res=0.
-         res2=0.
+    L=0d0
+    L2=0d0
+    do i=1,n
+      res=0.
+      res2=0.
 
-         if (i>1) then
-            do k=1,i-1
-               res=res+L(i,k)**2
-            end do
-         end if
-
-         L(i,i)=sqrt(A(i,i)-res)
-         L2(i,i)=sqrt(A(i,i)-res)
-
-         do j=i+1,n
-            res2=0.
-            do k=1,i-1
-               res2=res2+L(i,k)*L(j,k)
-            end do
-            L(j,i)=(A(i,j)-res2)/L(i,i)
-            L2(i,j)=(A(i,j)-res2)/L(i,i)
-         end do
-      end do
-    end subroutine cholesky
-
-    subroutine reso(n,L,L2,F,X)
-      implicit none
-      integer,intent(in)::n
-      real*8,dimension(n,n),intent(in)::L,L2
-      real*8,dimension(n),intent(in)::F
-      real*8,dimension(n)::y
-      real*8,dimension(n),intent(out)::x
-      integer::i,j,k
-
-      y(1)=f(1)/L(1,1)
-      do i=2,n
-         y(i)=(F(i)-L(i,i-1)*y(i-1))/L(i,i)
-      end do
-
-      x(n)=y(n)/L2(n,n)
-      do i=n-1,1,-1
-         x(i)=(y(i)-L2(i,i+1)*y(i+1))/L2(i,i)
-      end do
-    end subroutine reso
-
-
-    subroutine write(n,x,name)
-      integer,intent(in)::n
-      real*8,intent(in)::x
-      character*10 :: name
-      if (n==1) then
-        open(1,file=name,form="formatted")
-      else
-
-        open(1,file=name, form="formatted",position="append")
+      if (i>1) then
+        do k=1,i-1
+          res=res+L(i,k)**2
+        end do
       end if
-      !print*,n,x
-      write(1,*)n,x
-      close(1)
-    end subroutine write
+
+      L(i,i)=sqrt(A(i,i)-res)
+      L2(i,i)=sqrt(A(i,i)-res)
+
+      do j=i+1,n
+        res2=0.
+        do k=1,i-1
+          res2=res2+L(i,k)*L(j,k)
+        end do
+        L(j,i)=(A(i,j)-res2)/L(i,i)
+        L2(i,j)=(A(i,j)-res2)/L(i,i)
+      end do
+    end do
+  end subroutine cholesky
+
+  subroutine reso(n,L,L2,F,X)
+    implicit none
+    integer,intent(in)::n
+    real*8,dimension(n,n),intent(in)::L,L2
+    real*8,dimension(n),intent(in)::F
+    real*8,dimension(n)::y
+    real*8,dimension(n),intent(out)::x
+    integer::i,j,k
+
+    y(1)=f(1)/L(1,1)
+    do i=2,n
+      y(i)=(F(i)-L(i,i-1)*y(i-1))/L(i,i)
+    end do
+
+    x(n)=y(n)/L2(n,n)
+    do i=n-1,1,-1
+      x(i)=(y(i)-L2(i,i+1)*y(i+1))/L2(i,i)
+    end do
+  end subroutine reso
+
+
+  subroutine write(n,x,name)
+    integer,intent(in)::n
+    real*8,intent(in)::x
+    character*10 :: name
+    if (n==1) then
+      open(1,file=name,form="formatted")
+    else
+
+      open(1,file=name, form="formatted",position="append")
+    end if
+    !print*,n,x
+    write(1,*)n,x
+    close(1)
+  end subroutine write
 
 
 
 
+  function wtime ( )
 
-  end module fonctions
+    implicit none
+
+    integer ( kind = 4 ) clock_max
+    integer ( kind = 4 ) clock_rate
+    integer ( kind = 4 ) clock_reading
+    real ( kind = 8 ) wtime
+
+    call system_clock ( clock_reading, clock_rate, clock_max )
+
+    wtime = real ( clock_reading, kind = 8 ) &
+    / real ( clock_rate, kind = 8 )
+
+    return
+  end
+
+
+end module fonctions
