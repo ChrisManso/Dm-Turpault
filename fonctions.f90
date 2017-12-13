@@ -13,7 +13,7 @@ contains
     integer ::i,j,k
     real*8::sigma
 
-    do k=0,100
+    do k=0,1000
        do i=1,t
           sigma=0.
           do j=1,t
@@ -46,7 +46,7 @@ contains
     r=b-r
 
     k=0
-    kmax=50
+    kmax=1000
     eps=0.1
     nume=0.
     denom=0.
@@ -93,7 +93,7 @@ contains
     real*8:: alpha,eps,nume,denom,max
     integer :: k, kmax,i
 
-    kmax=100
+    kmax=1000
     eps=0.1
     nume=0.
     denom=0.
@@ -151,7 +151,7 @@ contains
     nume=0.
     denom=0.
     k=0
-    kmax=100
+    kmax=1000
     eps=0.1
     max=abs(sum(r*r))
     do while((k<kmax .and.  max>eps))
@@ -223,7 +223,7 @@ contains
     nume=0.
     denom=0.
     k=0
-    kmax=10
+    kmax=1000
     eps=0.1
     max=abs(sum(r*r))
     do while((k<kmax .and.  max>eps))
@@ -277,7 +277,7 @@ contains
    nume=0.
    denom=0.
    k=0
-   kmax=100
+   kmax=1000
    eps=0.1
    max=abs(sum(r*r))
 

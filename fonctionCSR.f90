@@ -5,20 +5,15 @@ contains
 
 Subroutine JacobiCSR(A,b,x,t)
     integer,intent(in)::t !!taille des matrices
-    real*8,dimension(t,t),intent(in)::A
     real*8,dimension(t),intent(in)::b
-    real*8,dimension(:),allocatable::AA
-    integer,dimension(:),allocatable::JA,IA
+    real*8,dimension(:),intent(in)::AA
+    integer,dimension(:),intent(in)::JA
+    integer,dimension(:),intent(in)::IA
     real*8,dimension(t),intent(inout)::x
     real*8,dimension(t)::d,Xnext
     integer ::i,j,k,l,m, Nb_elem,Nb_li
 
     real*8::sigma,diag
-
-
-    call NbrElemt(A,Nb_elem,Nb_li)
-    Allocate(AA(1:Nb_elem), JA(1:Nb_elem),IA(1:Nb_li+1))
-    call DenseToCSR(A,AA,JA,IA,Nb_elem)
 
     do k=0,10
        do i=1,t
@@ -38,53 +33,22 @@ Subroutine JacobiCSR(A,b,x,t)
        X=Xnext
     end do
 
-    deallocate(AA,IA,JA)
-
   end subroutine JacobiCSR
 
 
-
-subroutine multi_matCSR(FF,B,F,N)
-      integer,intent(in)::N
-      real*8,dimension(N),intent(out)::FF
-      real*8,dimension(N),intent(in)::F
-      real*8,dimension(N,N),intent(in)::B
-      real*8,dimension(:),allocatable::AA
-      integer,dimension(:),allocatable::JA,IA
-      integer :: i,j,k,l, Nb_elem, Nb_li
-      real*8::res
-
-
-      call NbrElemt(B,Nb_elem,Nb_li)
-      Allocate(AA(1:Nb_elem), JA(1:Nb_elem),IA(1:Nb_li+1))
-      call DenseToCSR(B,AA,JA,IA, Nb_elem)
-
-
-      do i=1,N
-         res=0.d0
-         k=IA(i)
-         l=IA(i+1)-1
-         do j=k,l
-            res=res+AA(j)*F(JA(j))
-         end do
-         FF(i)=res
-      end do
-
-      deallocate(AA,JA,IA)
- end subroutine multi_matCSR
-
-
-subroutine GPOCSR(A,b,x,t)
+subroutine GPOCSR(AA,JA,IA,b,x,t)
     integer,intent(in)::t !!taille des matrices
-    real*8,dimension(t,t),intent(in)::A
     real*8,dimension(t),intent(in)::b
+    real*8,dimension(:),intent(in)::AA
+    integer,dimension(:),intent(in)::JA
+    integer,dimension(:),intent(in)::IA
     real*8,dimension(t),intent(inout)::x
     real*8,dimension(t)::r,z
     real*8:: alpha,eps,nume,denom,max
     integer :: k, kmax,i
 
 
-    call multi_matCSR(r,A,x,t)
+    call multi_matCSR(AA,JA,IA,x,r,t)
     r=b-r
 
     k=0
@@ -100,7 +64,7 @@ subroutine GPOCSR(A,b,x,t)
        end if
     end do
     do while (k<kmax .and. max>eps)
-       call multi_matCSR(z,A,r,t)
+       call multi_matCSR(AA,JA,IA,r,z,t)
 
        do i=1,t
           nume=nume+r(i)**2
@@ -121,9 +85,11 @@ subroutine GPOCSR(A,b,x,t)
     end do
   end subroutine GPOCSR
 
-subroutine residuCSR(A,b,x,t)
+subroutine residuCSR(AA,JA,IA,b,x,t)
     integer,intent(in)::t !!taille des matrices
-    real*8,dimension(t,t),intent(in)::A
+    real*8,dimension(:),intent(in)::AA
+    integer,dimension(:),intent(in)::JA
+    integer,dimension(:),intent(in)::IA
     real*8,dimension(t),intent(in)::b
     real*8,dimension(t),intent(inout)::x
     real*8,dimension(t)::r,z
@@ -136,7 +102,7 @@ subroutine residuCSR(A,b,x,t)
     denom=0.
     alpha=0.
     z=0.
-    Call multi_matCSR(r,A,x,t)
+    Call multi_matCSR(AA,JA,IA,x,r,t)
     r=b-r
     max=0
     k=0
@@ -147,7 +113,7 @@ subroutine residuCSR(A,b,x,t)
     end do
 
     do while (k<kmax .and.  max>eps)
-       call multi_matCSR(z,A,r,t)
+       call multi_matCSR(AA,JA,IA,r,z,t)
        do i=1,t
           nume=nume+r(i)*z(i)
           denom=denom+z(i)*z(i)
@@ -167,9 +133,11 @@ subroutine residuCSR(A,b,x,t)
 
 
 !!$!! ARNOLDI
-  subroutine ArnoldiCSR(A,r,H,vm,t)
+  subroutine ArnoldiCSR(AA,JA,IA,r,H,vm,t)
     integer,intent(in)::t !!taille des matrices
-    real*8,dimension(t,t),intent(in)::A
+    real*8,dimension(:),intent(in)::AA
+    integer,dimension(:),intent(in)::JA
+    integer,dimension(:),intent(in)::IA
     real*8,dimension(t,t)::v
     real*8,dimension(t,t),intent(out)::H
     real*8,dimension(t),intent(in)::r
@@ -182,14 +150,14 @@ subroutine residuCSR(A,b,x,t)
     do j=1,t
 
        do i=1,j
-          call multi_matCSR(z1,A,v(j,:),t)
+          call multi_matCSR(AA,JA,IA,v(j,:),Z1,t)
           h(i,j)=dot_product(z1,v(i,:))  !!fait le produit scalaire (à mettre de partout peut etre)
        end do
     q=0.
     do i=1,j
        q=q+h(i,j)*v(i,:)
     end do
-    call multi_mat(z,A,v(j,:),t)
+    call multi_mat(AA,JA,IA,v(j,:),z,t)
 
     z=Z-q
     H(j+1,j)=sqrt(sum(z*z))
@@ -201,6 +169,30 @@ subroutine residuCSR(A,b,x,t)
     end do
 
 end subroutine ArnoldiCSR
+
+
+
+subroutine multi_matCSR(AA,JA,IA,F,AF,t)
+      integer,intent(in)::t
+      real*8,dimension(t),intent(out)::FF
+      real*8,dimension(t),intent(in)::F
+      real*8,dimension(:),intent(in)::AA
+      integer,dimension(:),intent(in)::JA
+      integer,dimension(:),intent(in)::IA
+      integer :: i,j,k,l, Nb_elem, Nb_li
+      real*8::res
+
+      do i=1,N
+         res=0.d0
+         k=IA(i)
+         l=IA(i+1)-1
+         do j=k,l
+            res=res+AA(j)*F(JA(j))
+         end do
+         FF(i)=res
+      end do
+
+ end subroutine multi_matCSR
 
 
 
