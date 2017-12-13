@@ -13,6 +13,7 @@ contains
     integer ::i,j,k,kmax
     real*8::max,sigma, eps
 
+
     r=b-matmul(A,x)
     max=abs(sum(r*r))
     kmax=1000
@@ -59,7 +60,6 @@ contains
 
     k=0
     kmax=100
-
     nume=0.
     denom=0.
     alpha=0.
@@ -103,8 +103,9 @@ print*,"GPO = ", max,k
     real*8:: alpha,eps,nume,denom,max
     integer :: k, kmax,i
 
-    kmax=10000
-    eps=0.00001
+
+    kmax=1000
+    eps=0.1
     nume=0.
     denom=0.
     alpha=0.
@@ -160,9 +161,10 @@ print*,"residu = ",max,k
 
     nume=0.
     denom=0.
-    k=0
-    kmax=1000000
-    eps=0.00001
+
+    kmax=1000
+    eps=0.1
+
     max=abs(sum(r*r))
     do while((k<kmax .and.  max>eps))
 
@@ -233,8 +235,10 @@ print*,"precon_residu_Jacobi = ",max,k
     nume=0.
     denom=0.
     k=0
-    kmax=1000000
-    eps=0.00001
+
+    kmax=1000
+    eps=0.1
+
     max=abs(sum(r*r))
     do while((k<kmax .and.  max>eps))
       call multi_mat(w,A,q,t)
@@ -287,8 +291,10 @@ print*,"precon_residu_SSOR = ",max,k
    nume=0.
    denom=0.
    k=0
-   kmax=1000000
-   eps=0.00001
+
+   kmax=1000
+   eps=0.1
+
    max=abs(sum(r*r))
 
 
