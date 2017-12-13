@@ -197,7 +197,7 @@ print*,"precon_residu_Jacobi = ",max,k
 
 
 
-  subroutine precon_residu_SSOR(A,b,x,t)  !!M-1Ax=M-1B aevc M=(D-wR)D-1(D-wF))
+  subroutine precon_residu_SSOR(A,b,x,t)  !!M-1Ax=M-1B avec M=(D-wR)D-1(D-wF))
     integer,intent(in)::t !!taille des matrices
     real*8,dimension(t,t),intent(in)::A
     real*8,dimension(t),intent(in)::b
@@ -585,7 +585,6 @@ end subroutine mat_rot
 
       return
     end
-
 
 
   end module fonctions
