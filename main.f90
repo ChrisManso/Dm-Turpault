@@ -22,12 +22,13 @@ program main
   ! call readMat('matrix/bcsstk18.mtx',ncols,nelmt,AA,IA,JA,nlen)
 
 
-  !!! Exemple d'utilisation de la fonctions DenseToCSR
+  ! !! Exemple d'utilisation de la fonctions DenseToCSR
   ! Test(1,:)=(/12.,4.,0.,0./)
   ! Test(2,:)=(/0.,7.,9.,-3./)
   ! Test(3,:)=(/1.,0.,5.,3.4/)
   ! Test(4,:)=(/0.,0.,-3.9,1./)
   ! call NbrElemt(Test,nelmt,nlines)
+
   ! !print*,nelmt,nlines
   ! allocate (AA(1:nelmt),JA(1:nelmt),IA(1:nlines+1))
   ! call DenseToCSR(Test,AA,JA,IA,nelmt)
@@ -36,7 +37,7 @@ program main
   ! !print*, "IA vaut",IA
 
   !!! PARAMETRE
-  t=500 !/!\ choisie la dimension
+  t=20 !/!\ choisie la dimension
   Allocate(x(1:t),b(1:t),A(1:t,1:t),G(1:t,1:t),Id(1:t,1:t))
 
 
@@ -48,7 +49,7 @@ program main
   do i=1,t
     do j=1,t
       call random_number(nombre)
-      G(i,j)=nombre/t    !--> cela permet que la matrice A soit a diagonale strictement dominante
+      G(i,j)=nombre    !--> cela permet que la matrice A soit a diagonale strictement dominante
 
     end do
   end do
@@ -66,7 +67,7 @@ program main
   t1= wtime ( )
   call GPO(A,b,x,t)
   t2= wtime ( )
-  print*,"temps de GPO =",t2-t1
+  !!print*,"temps de GPO =",t2-t1
   Print*," "
 
 
@@ -74,19 +75,13 @@ program main
   x=1.  !Réinitialisation du vecteur d'entré
   t1= wtime ( )
   call residu(A,b,x,t) !! celle ci non plus
-
 t2=wtime ( )
-print*,"temps residu =",t2-t1
+  !!print*,"temps residu =",t2-t1
   print*,"residu : ",x
   Print*," "
   x=1.
 
-t1= wtime ( )
-  call precon_residu_SSOR(A,b,x,t)
-t2=wtime ( )
-print*,"temps de precon_residu_SSOR =",t2-t1
-  !!print*,"precon_residu_SSOR : ",x
-  Print*," "
+
 
 
 
@@ -94,7 +89,7 @@ print*,"temps de precon_residu_SSOR =",t2-t1
   t1= wtime ( )
   call Jacobi(A,b,x,t)
   t2=wtime ( )
-  print*,"temps de jacobi=",t2-t1
+  !!print*,"temps de jacobi=",t2-t1
   Print*," "
 
 
@@ -103,18 +98,19 @@ print*,"temps de precon_residu_SSOR =",t2-t1
   t1= wtime ( )
   call GMRes(A,b,x,t)
   t2=wtime ( )
-  print*,"temps de GMRes=",t2-t1
+  !print*,"temps de GMRes=",t2-t1
   Print*," "
 
 
+print*,"----------------------------------------------------------------------------------------"
 
-
-!!! ALGORYTHME CSR
+! !! ALGORYTHME CSR
 ! x=1.  !Réinitialisation du vecteur d'entré
 ! t1= wtime ( )
 ! call GPOCSR(AA,IA,JA,b,x,t)
 ! t2=wtime ( )
-! print*,"temps de jacobi=",t2-t1
+! Print*,"le x de GPOCSR est = ",x
+! print*,"temps de GPOSR=",t2-t1
 ! Print*," "
 !
 !
@@ -125,14 +121,15 @@ print*,"temps de precon_residu_SSOR =",t2-t1
 ! print*,"temps de jacobi=",t2-t1
 ! Print*," "
 
-
+print*, "-------------------------------------------------------------------------------------"
 
 !!! PRECONDITIONNEUR
   x=1.  !Réinitialisation du vecteur d'entré
   t1= wtime ( )
   call precon_residu_SSOR(A,b,x,t)
   t2=wtime ( )
-  print*,"temps de precon_residu_SSOR =",t2-t1
+  print*,"le x de precon_residu_SSOR :",x
+  !print*,"temps de precon_residu_SSOR =",t2-t1
   Print*," "
 
 
@@ -148,15 +145,20 @@ print*,"temps de precon_residu_SSOR =",t2-t1
   t1= wtime ( )
   call precon_residu_droite_Jacobi(A,b,x,t)
   t2=wtime ( )
-  print*,"temps de precon_residu_droite_Jacobi =",t2-t1
+  print*,"le x de precon_residu_droite_Jacobi",x
+  !!print*,"temps de precon_residu_droite_Jacobi =",t2-t1
   Print*," "
 
   x=1.  !Réinitialisation du vecteur d'entré
   t1= wtime ( )
   call precon_residu_droite_SSOR(A,b,x,t)
   t2=wtime ( )
+  print*,"le x de precon_residu_droite_SSOR",x
   print*,"temps de precon_residu_droite_SSOR =",t2-t1
   Print*," "
+
+
+
 
 
 !!! Liberation de la mémoire

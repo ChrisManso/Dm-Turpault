@@ -28,6 +28,7 @@ Subroutine JacobiCSR(AA,JA,IA,b,x,t)
     eps=0.00001
     k=0
     xnext=0.
+    
     do while (k<kmax .and. max>eps)
 
        do i=1,t

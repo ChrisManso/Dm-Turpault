@@ -17,7 +17,7 @@ contains
     r=b-matmul(A,x)
     max=abs(sum(r*r))
     kmax=1000
-    eps=0.0000001
+    eps=0.000001
     k=0
     xnext=0.
       do while (k<kmax .and. max>eps)
@@ -59,12 +59,12 @@ contains
     r=b-r
 
     k=0
-    kmax=100
+    kmax=1000
     nume=0.
     denom=0.
     alpha=0.
     z=0.
-    eps=0.0000001
+    eps=0.000001
 
     max= abs(sum(r*r))
     do while (k<kmax .and. max>eps)
@@ -106,7 +106,7 @@ print*,"il est atteint a l'iteration numero ",k
 
 
     kmax=1000
-    eps=0.1
+    eps=0.000001
     nume=0.
     denom=0.
     alpha=0.
@@ -164,9 +164,9 @@ print*,"il est atteint a l'iteration numero ",k
 
     nume=0.
     denom=0.
-
+    k=0
     kmax=1000
-    eps=0.1
+    eps=0.000001
 
     max=abs(sum(r*r))
     do while((k<kmax .and.  max>eps))
@@ -205,10 +205,10 @@ print*,"il est atteint a l'iteration numero ",k
     real*8,dimension(t,t),intent(in)::A
     real*8,dimension(t),intent(in)::b
     real*8,dimension(t),intent(inout)::x
-    real*8,dimension(t,t)::M,L,L2,D,E,F
-    real*8,dimension(t)::r,z,q,w
-    real*8:: alpha,eps,nume,denom,max
-    integer :: k, kmax,i
+    real*8,dimension(t,t)::M,R1,Q1,D,E,F
+    real*8,dimension(t)::r,z,q,w,y
+    real*8:: alpha,eps,nume,denom,max,som
+    integer :: k, kmax,i,ui,uj
 
     call multi_mat(r,A,x,t)
     r=b-r
@@ -231,24 +231,45 @@ print*,"il est atteint a l'iteration numero ",k
     end do
 
 
-    M=matmul(matmul((D-0.8*E),transpose(D)),(D-0.8*F))  !! construction du préconditionneur
+    M=matmul(matmul((D-0.5*E),transpose(D)),(D-0.5*F))  !! construction du préconditionneur
 
-    call cholesky(t,M,L,L2)
-    call reso(t,L,L2,r,q)
+    call givens(M,t,Q1,R1)
+
+    !! resolution du systeme Mq=r
+    w=matmul(transpose(Q1),r)
+    q(t) = w(t)/R1(t,t)
+        do ui=t-1,1,-1
+          som=0.
+          do uj=ui+1,t
+            som = som+R1(ui,uj)*q(uj)
+          end do
+          q(ui) = (w(ui)-som)/R1(ui,ui)
+       end do
 
     nume=0.
     denom=0.
     k=0
 
     kmax=1000
-    eps=0.1
+    eps=0.000001
 
     max=abs(sum(r*r))
     do while((k<kmax .and.  max>eps))
       call multi_mat(w,A,q,t)
 
-      call cholesky(t,M,L,L2)
-      call reso(t,L,L2,w,z)
+
+      !! resolution de Mz=w
+
+      y=matmul(transpose(Q1),w)
+      z(t) = y(t)/R1(t,t)
+          do ui=t-1,1,-1
+            som=0.
+            do uj=ui+1,t
+              som = som+R1(ui,uj)*z(uj)
+            end do
+            z(ui) = (y(ui)-som)/R1(ui,ui)
+         end do
+
 
       do i=1,t
          nume=nume+q(i)*z(i)
@@ -257,6 +278,7 @@ print*,"il est atteint a l'iteration numero ",k
       end do
 
       alpha=nume/denom
+
       x=x+alpha*q
       r=r-alpha*w
 
@@ -287,17 +309,15 @@ print*,"il est atteint a l'iteration numero ",k
    do i=1,t
      M(i,i)=A(i,i)
    end do
-   u=0.
-   u= matmul(M,x)
    r=0.
-   r=b-matmul(A,matmul(transpose(M),u))
+   r=b-matmul(A,x)
 
    nume=0.
    denom=0.
    k=0
 
    kmax=1000
-   eps=0.1
+   eps=0.000001
 
    max=abs(sum(r*r))
 
@@ -338,10 +358,10 @@ print*,"il est atteint a l'iteration numero ",k
    real*8,dimension(t,t),intent(in)::A
    real*8,dimension(t),intent(in)::b
    real*8,dimension(t),intent(inout)::x
-   real*8,dimension(t,t)::M,L,L2,D,E,F
+   real*8,dimension(t,t)::M,Q1,R1,D,E,F
    real*8,dimension(t)::r,z,q,w,u
-   real*8:: alpha,eps,nume,denom,max,norme
-   integer :: k, kmax,i
+   real*8:: alpha,eps,nume,denom,max,norme,som
+   integer :: k, kmax,i,ui,uj
    M=0.
 
    E=0.
@@ -363,30 +383,36 @@ print*,"il est atteint a l'iteration numero ",k
    M=matmul(matmul((D-0.8*E),transpose(D)),(D-0.8*F))  !! construction du préconditionneur
 
 
-   u=0.
-   u= matmul(M,x)
+
+
    r=0.
 
-   call cholesky(t,M,L,L2)
-
-   call reso(t,L,L2,u,r)
-
-   r=b-matmul(A,u)
+   r=b-matmul(A,x)
 
    nume=0.
    denom=0.
    k=0
 
    kmax=1000
-   eps=0.1
+   eps=0.000001
 
    max=abs(sum(r*r))
 
 
    do while((k<kmax .and.  max>eps))
-     
-     !!resoudre Mz=r
-     call reso(t,L,L2,r,z)
+
+     call givens(M,t,Q1,R1)
+
+     !! resolution du systeme Mq=r
+     w=matmul(transpose(Q1),r)
+     z(t) = w(t)/R1(t,t)
+         do ui=t-1,1,-1
+           som=0.
+           do uj=ui+1,t
+             som = som+R1(ui,uj)*z(uj)
+           end do
+           z(ui) = (w(ui)-som)/R1(ui,ui)
+        end do
 
       w=matmul(A,z)
 
@@ -407,7 +433,7 @@ print*,"il est atteint a l'iteration numero ",k
     end if
 
    end do
-   print*,"precon_residu_droite_Jacobi = ",max,k
+   print*,"precon_residu_droite_SSOR = ",max,k
 
  end subroutine precon_residu_droite_SSOR
 
@@ -469,7 +495,7 @@ end subroutine
 
     beta=sqrt(sum(r*r))
     k=0
-    eps=0.01
+    eps=0.000001
     do while(beta>eps .and. k<kmax)
        call arnoldi(A,r,H,vm,t)
        call givens(H,t,Q,Rm) !! decompostion QR de H
