@@ -17,7 +17,7 @@ contains
     r=b-matmul(A,x)
     max=abs(sum(r*r))
 
-    kmax=1000000000
+    kmax=150
     eps=0.0001
 
     k=0
@@ -64,7 +64,7 @@ contains
 
     k=0
 
-    kmax=1000000000
+    kmax=150
     eps=0.0001
 
     nume=0.
@@ -116,7 +116,7 @@ contains
 
 
 
-    kmax=1000000000
+    kmax=150
     eps=0.0001
 
 
@@ -228,7 +228,7 @@ contains
 
     k=0
 
-    kmax=1000000000
+    kmax=150
     eps=0.0001
 
 
@@ -317,7 +317,7 @@ contains
 
     k=0
 
-    kmax=1000000000
+    kmax=150
     eps=0.0001
 
 
@@ -388,7 +388,7 @@ contains
     k=0
 
 
-    kmax=1000000000
+    kmax=150
     eps=0.0001
 
 
@@ -473,7 +473,7 @@ contains
 
    k=0
 
-   kmax=1000000000
+   kmax=150
    eps=0.0001
 
    max=abs(sum(r*r))
@@ -557,7 +557,7 @@ contains
 
    k=0
 
-   kmax=1000000000
+   kmax=150
    eps=0.0001
 
    max=abs(sum(r*r))
@@ -634,7 +634,7 @@ contains
    denom=0.
    k=0
 
-   kmax=1000000000
+   kmax=150
    eps=0.0001
 
    max=abs(sum(r*r))
