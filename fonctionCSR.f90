@@ -15,14 +15,14 @@ contains
     real*8,dimension(t)::d,Xnext,r
     integer ::i,j,k,l,m, Nb_elem,Nb_li,kmax
     real*8::sigma,diag,epsn,norme,max
-    call multi_matCSR(AA,IA,JA,x,r,t)
+    call multi_matCSR(AA,JA,IA,x,r,t)
     r=b-r
     max=sum(r*r)
     k=0
     kmax=100
     eps=0.01
     xnext=0.
-    do while (k<kmax .and. max>eps)
+    do while (k<kmax .and. max>eps .and. norme<1.E+30)
       do i=1,t
         sigma=0.
         diag=0.
@@ -38,7 +38,7 @@ contains
         Xnext(i)=(b(i)-sigma)/diag
       end do
       X=Xnext
-      call multi_matCSR(AA,IA,JA,x,r,t)
+      call multi_matCSR(AA,JA,IA,x,r,t)
       r=b-r
       norme=abs(sum(r*r))
       if (norme<max) then
@@ -47,7 +47,10 @@ contains
       k=k+1
       call write(k,sqrt(sum(r*r)),"JacCSR.txt")
     end do
-    print*,"Pour Jacobi au format CSR le residu vaut ", max
+    if (k<kmax .and. max>eps) then
+      print*,"La méthode diverge"
+    end if
+    print*,"Pour Jacobi en CSR, residu=", max
     print*,"il est atteint a l'iteration numero ",k
 
   end subroutine JacobiCSR
@@ -80,10 +83,9 @@ contains
     eps=0.01
 
     max= abs(sum(r*r))
-    do while (k<kmax .and. max>eps)
+    do while (k<kmax .and. max>eps .and. norme< 1.E+30)
 
       call multi_matCSR(AA,JA,IA,r,z,t)
-
 
       do i=1,t
         nume=nume+r(i)**2
@@ -101,9 +103,12 @@ contains
       end if
 
       k=k+1
-      call write(k,sqrt(sum(r*r)),"GPOCSR.txt")
+          call write(k,sqrt(sum(r*r)),"GPOCSR.txt")
     end do
-    print*,"Pour GPO au format CSR le residu vaut ", max
+    if (k<kmax .and. max>eps) then
+      print*,"La méthode diverge"
+    end if
+    print*,"Pour GPO en CSR, residu=", max
     print*,"il est atteint a l'iteration numero ",k
   end subroutine GPOCSR
 
@@ -119,8 +124,8 @@ contains
     real*8:: alpha,eps,nume,denom,max,norme
     integer :: k, kmax,i
 
-    kmax=100
     eps=0.01
+    kmax=100
     nume=0.
     denom=0.
     alpha=0.
@@ -132,7 +137,7 @@ contains
     k=0
     max=abs(sum(r*r))
 
-    do while (k<kmax .and.  max>eps)
+    do while (k<kmax .and.  max>eps .and. norme<1.E+30)
       call multi_matCSR(AA,JA,IA,r,z,t)
       do i=1,t
         nume=nume+r(i)*z(i)
@@ -150,7 +155,10 @@ contains
       k=k+1
       call write(k,sqrt(sum(r*r)),"ResCSR.txt")
     end do
-    print*,"Pour ResiduMinimal au format CSR le residu vaut ", max
+    if (k<kmax .and. max>eps) then
+      print*,"La méthode diverge"
+    end if
+    print*,"Pour ResMin en CSR, residu =", max
     print*,"il est atteint a l'iteration numero ",k
   end subroutine residuCSR
 
@@ -213,6 +221,7 @@ contains
         res=res+AA(j)*F(JA(j))
       end do
       AF(i)=res
+
     end do
   end subroutine multi_matCSR
 
