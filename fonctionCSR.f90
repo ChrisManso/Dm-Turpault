@@ -76,7 +76,8 @@ contains
     r=b-r
 
     k=0
-    kmax=10000
+    kmax=100
+
 
 
     alpha=0.
@@ -90,8 +91,6 @@ contains
 
       nume=0.
       denom=0.
-
-
       do i=1,t
         nume=nume+r(i)**2
         denom=denom+z(i)*r(i)
@@ -138,6 +137,7 @@ contains
     r=b-r
     max=0
     k=0
+    kmax=100
     max=abs(sum(r*r))
 
     do while (k<kmax .and.  max>eps .and. norme<1.E+30)
