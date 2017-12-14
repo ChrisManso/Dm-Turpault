@@ -17,7 +17,7 @@ contains
     r=b-matmul(A,x)
     max=abs(sum(r*r))
 
-    kmax=1000
+    kmax=100000
     eps=0.000001
 
     k=0
@@ -63,7 +63,7 @@ contains
 
     k=0
 
-    kmax=1000
+    kmax=100000
 
     nume=0.
     denom=0.
@@ -113,8 +113,8 @@ contains
 
 
 
-    kmax=1000
-    eps=0.000001
+    kmax=100000
+    eps=0.00001
 
     nume=0.
     denom=0.
@@ -145,8 +145,8 @@ contains
       k=k+1
       call write(k,sqrt(sum(r*r)),"ResMin.txt")
     end do
-    print*,"Pour ResiduMinimum le residu vaut ", max
-    print*,"il est atteint a l'iteration numero ",k
+    !!print*,"Pour ResiduMinimum le residu vaut ", max
+    !print*,"il est atteint a l'iteration numero ",k
   end subroutine residu
 
 
@@ -175,7 +175,7 @@ contains
     denom=0.
     k=0
 
-    kmax=1000
+    kmax=100000
     eps=0.000001
 
 
@@ -262,7 +262,7 @@ print*,"hello"
     k=0
 
 
-    kmax=1000
+    kmax=100000
     eps=0.000001
 
 
@@ -332,7 +332,7 @@ print*,"hello"
     k=0
 
 
-   kmax=1000
+   kmax=100000
    eps=0.000001
 
 
@@ -414,7 +414,7 @@ print*,"hello"
    denom=0.
    k=0
 
-   kmax=1000
+   kmax=100000
    eps=0.000001
 
    max=abs(sum(r*r))
@@ -457,6 +457,160 @@ print*,"hello"
    print*,"precon_residu_droite_SSOR = ",max,k
 
  end subroutine precon_residu_droite_SSOR
+
+
+ subroutine precon_residu_droite_SSOR_FlexibleB(A,b,x,t)
+   integer,intent(in)::t !!taille des matrices
+   real*8,dimension(t,t),intent(in)::A
+   real*8,dimension(t),intent(in)::b
+   real*8,dimension(t),intent(inout)::x
+   real*8,dimension(t,t)::M,Q1,R1,D,E,F
+   real*8,dimension(t)::r,z,q,w,u
+   real*8:: alpha,eps,nume,denom,max,norme,som,Para
+   integer :: k, kmax,i,ui,uj
+   M=0.
+
+   E=0.
+   D=0.
+   F=0.
+   do i=1,t
+     do j=1,t
+       if (i==j) then
+         D(i,j)=A(i,i)
+       else if (j<i) then
+         E(i,j)=-A(i,j)
+       else
+         F(i,j)=-A(i,j)
+       end if
+
+     end do
+   end do
+   para=1.5
+   M=matmul(matmul((D-para*E),transpose(D)),(D-para*F))  !! construction du préconditionneur
+
+   r=0.
+
+   r=b-matmul(A,x)
+
+   nume=0.
+   denom=0.
+   k=0
+
+   kmax=100000
+   eps=0.000001
+
+   max=abs(sum(r*r))
+
+
+   do while((k<kmax .and.  max>eps))
+
+
+     if (para==0.5) then
+       para=1.5
+     else
+       para=0.5
+     end if
+     M=matmul(matmul((D-para*E),transpose(D)),(D-para*F))
+     call givens(M,t,Q1,R1)
+
+     !! resolution du systeme Mz=r
+     w=matmul(transpose(Q1),r)
+     z(t) = w(t)/R1(t,t)
+         do ui=t-1,1,-1
+           som=0.
+           do uj=ui+1,t
+             som = som+R1(ui,uj)*z(uj)
+           end do
+           z(ui) = (w(ui)-som)/R1(ui,ui)
+        end do
+
+      w=matmul(A,z)
+
+
+
+     do i=1,t
+        nume=nume+r(i)*w(i)
+        denom=denom+w(i)*w(i)
+     end do
+
+     alpha=nume/denom
+
+     x=x+alpha*z
+     r=r-alpha*w
+     k=k+1
+
+     norme=abs(sum(r*r))
+    if (norme<max) then
+        max=norme
+    end if
+
+   end do
+   print*,"precon_residu_droite_SSOR_FlexibleB = ",max,k
+
+ end subroutine precon_residu_droite_SSOR_FlexibleB
+
+
+
+
+ subroutine precon_residu_droite_SSOR_FlexibleC(A,b,x,t)
+   integer,intent(in)::t !!taille des matrices
+   real*8,dimension(t,t),intent(in)::A
+   real*8,dimension(t),intent(in)::b
+   real*8,dimension(t),intent(inout)::x
+   real*8,dimension(t,t)::M,Q1,R1,D,E,F
+   real*8,dimension(t)::r,z,q,w,u
+   real*8:: alpha,eps,nume,denom,max,norme,som,Para
+   integer :: k, kmax,i,ui,uj
+   M=A
+
+   r=0.
+
+   r=b-matmul(A,x)
+
+   nume=0.
+   denom=0.
+   k=0
+
+   kmax=100000
+   eps=0.000001
+
+   max=abs(sum(r*r))
+
+   do while((k<kmax .and.  max>eps))
+
+     !! resolution du systeme Mz=r
+    call residu(A,r,z,t)
+
+      w=matmul(A,z)
+
+
+
+     do i=1,t
+        nume=nume+r(i)*w(i)
+        denom=denom+w(i)*w(i)
+     end do
+
+     alpha=nume/denom
+
+     x=x+alpha*z
+     r=r-alpha*w
+     k=k+1
+
+     norme=abs(sum(r*r))
+    if (norme<max) then
+        max=norme
+    end if
+
+   end do
+
+   print*,"precon_residu_droite_SSOR_FlexibleC = ",max,k
+
+ end subroutine precon_residu_droite_SSOR_FlexibleC
+
+
+
+
+
 
 
   !!$!! ARNOLDI
