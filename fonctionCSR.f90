@@ -76,7 +76,9 @@ contains
     r=b-r
 
     k=0
+
     kmax=1000
+
 
     print*,"hello2"
     alpha=0.
@@ -90,7 +92,6 @@ contains
 
       nume=0.
       denom=0.
-      print*,"hello1"
 
       do i=1,t
         nume=nume+r(i)**2
@@ -138,6 +139,7 @@ contains
     r=b-r
     max=0
     k=0
+    kmax=100
     max=abs(sum(r*r))
 
     do while (k<kmax .and.  max>eps .and. norme<1.E+30)
@@ -223,9 +225,12 @@ contains
 
       k=IA(i)
       l=IA(i+1)-1
+      print*,k,l
       print*,i
       do j=k,l
+        print*,"je suis j1",j
         res=res+AA(j)*F(JA(j))
+        print*,"je suis j2",j
       end do
       AF(i)=res
       print*,i
