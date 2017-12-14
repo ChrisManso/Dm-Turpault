@@ -14,14 +14,14 @@ program main
   real*8::nombre,t1,t2,alpha
   integer::nlen,ncols,nlines,nelmt,t,i,j
 
-
+call Lecture("matrix/fs_760_3.mtx",A,t)
 
   !!! PARAMETRE
 
 
 !   t=20 !/!\ choisie la dimension
-!   Allocate(x(1:t),x0(1:t),b(1:t),A(1:t,1:t),G(1:t,1:t),Id(1:t,1:t))
-!x0=1.
+ Allocate(x(1:t),x0(1:t),b(1:t),G(1:t,1:t),Id(1:t,1:t))!,A(1:t,1:t))
+x0=1.
 !
 !   !!! Création de la matrice An
 !
@@ -36,27 +36,28 @@ program main
 !     end do
 !   end do
 !
-!   Id=reshape((/1,((0,i=1,t),1,j=1,t-1)/),(/t,t/))
+!Id=reshape((/1,((0,i=1,t),1,j=1,t-1)/),(/t,t/))
 !   A=alpha*Id+matmul(transpose(G),G)
 !
 !   !!! Initialisation de notre membre de droite, la matrice B
-!   b=1.
-!   b=b/sqrt(sum(b*b))
+  b=1.
+ b=b/sqrt(sum(b*b))
 !
 !
 !   !!! ALGORYTHME
-!   x=x0  !Réinitialisation du vecteur d'entré
-!   t1= wtime ( )
-!   call GPO(A,b,x,t)
-!   t2= wtime ( )
+   ! x=x0  !Réinitialisation du vecteur d'entré
+   ! t1= wtime ( )
+   ! call GPO(A,b,x,t)
+   ! t2= wtime ( )
 !
-!   print*,"temps de GPO =",t2-t1
-!   Print*," "
+  ! print*,"temps de GPO =",t2-t1
+  ! Print*," "
 !
 !
 !
-!   x=x0  !Réinitialisation du vecteur d'entré
+  x=x0  !Réinitialisation du vecteur d'entré
 !
+
 !   t1= wtime ( )
 !   call residu(A,b,x,t)
 ! t2=wtime ( )
@@ -112,17 +113,17 @@ program main
     ! Print*," "
     !
     !
-    ! x=x0  !Réinitialisation du vecteur d'entré
-    ! t1= wtime ( )
-    ! call precon_residu_droite_Jacobi(A,b,x,t)
-    ! t2=wtime ( )
-    ! print*,"temps de precon_residu_droite_Jacobi =",t2-t1
-    ! Print*," "
-    !
+    x=x0  !Réinitialisation du vecteur d'entré
+    t1= wtime ( )
+    call precon_residu_droite_Jacobi(A,b,x,t)
+    t2=wtime ( )
+    print*,"temps de precon_residu_droite_Jacobi =",t2-t1
+    Print*," "
+
 
   !!! Liberation de la mémoire
 
-   !deallocate(x,x0,b,A,G,Id)
+   deallocate(x,x0,b,A,G,Id)
 
 
 
@@ -145,37 +146,37 @@ print*,"------------------------------------------------------------------------
 ! allocate (AA(1:nelmt),JA(1:nelmt),IA(1:ncols+1),b(1:ncols),x(1:ncols),x0(1:ncols))
 ! call readMat('matrix/fs_541_4.mtx',ncols,nelmt,AA,IA,JA,nlen)
 
-nlen=len('matrix/fs_760_3.mtx')
-call NbrMat('matrix/fs_760_3.mtx',nlen,ncols,nlines,nelmt)
-allocate (AA(1:nelmt),JA(1:nelmt),IA(1:ncols+1),b(1:ncols),x(1:ncols),x0(1:ncols))
-call readMat('matrix/fs_760_3.mtx',ncols,nelmt,AA,IA,JA,nlen)
-print*,"hello"
-b=1.
-b=b/sqrt(sum(b*b))
-x0=1.
-
-x=x0  !Réinitialisation du vecteur d'entré
-t1= wtime ( )
-print*,"hello"
-call GPOCSR(AA,JA,IA,b,x,ncols)
-t2=wtime ( )
-print*,"temps de GPO en CSR=",t2-t1
-Print*," "
-
-
-x=x0  !Réinitialisation du vecteur d'entré
-t1= wtime ( )
-call residuCSR(AA,JA,IA,b,x,ncols)
-t2=wtime ( )
-print*,"temps de ResMin en CSR=",t2-t1
-Print*," "
-
-x=x0  !Réinitialisation du vecteur d'entré
-t1= wtime ( )
-call JacobiCSR(AA,JA,IA,b,x,ncols)
-t2=wtime ( )
-print*,"temps de Jacobi en CSR=",t2-t1
-Print*," "
+! nlen=len('matrix/fs_760_3.mtx')
+! call NbrMat('matrix/fs_760_3.mtx',nlen,ncols,nlines,nelmt)
+! allocate (AA(1:nelmt),JA(1:nelmt),IA(1:ncols+1),b(1:ncols),x(1:ncols),x0(1:ncols))
+! call readMat('matrix/fs_760_3.mtx',ncols,nelmt,AA,IA,JA,nlen)
+! print*,"hello"
+! b=1.
+! b=b/sqrt(sum(b*b))
+! x0=1.
+!
+! x=x0  !Réinitialisation du vecteur d'entré
+! t1= wtime ( )
+! print*,"hello"
+! call GPOCSR(AA,JA,IA,b,x,ncols)
+! t2=wtime ( )
+! print*,"temps de GPO en CSR=",t2-t1
+! Print*," "
+!
+!
+! x=x0  !Réinitialisation du vecteur d'entré
+! t1= wtime ( )
+! call residuCSR(AA,JA,IA,b,x,ncols)
+! t2=wtime ( )
+! print*,"temps de ResMin en CSR=",t2-t1
+! Print*," "
+!
+! x=x0  !Réinitialisation du vecteur d'entré
+! t1= wtime ( )
+! call JacobiCSR(AA,JA,IA,b,x,ncols)
+! t2=wtime ( )
+! print*,"temps de Jacobi en CSR=",t2-t1
+! Print*," "
 
 !!! PRECONDITIONNEUR
 
@@ -227,7 +228,7 @@ Print*," "
 ! print*,"temps de Jacobi au format CSR=",t2-t1
 ! Print*," "
 !
-deallocate(AA,JA,IA,b,x,x0)
+!deallocate(AA,JA,IA,b,x,x0)
 
 
 

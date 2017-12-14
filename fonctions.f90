@@ -111,25 +111,25 @@ contains
     real*8,dimension(t),intent(in)::b
     real*8,dimension(t),intent(inout)::x
     real*8,dimension(t)::r,z
-    real*8:: alpha,eps,nume,denom,max
+    real*8:: alpha,eps,nume,denom,maxi,norme
     integer :: k, kmax,i
 
 
 
-    kmax=150
+    kmax=1000
     eps=0.0001
 
 
     alpha=0.
     z=0.
-    Call multi_mat(r,A,x,t)
 
-    r=b-r
-    max=0
+    r=b-matmul(A,x)
+
+
     k=0
-    max=abs(sum(r*r))
+    maxi=abs(sum(r*r))
 
-    do while (k<kmax .and.  max>eps)
+    do while (k<kmax .and.  maxi>eps)
       nume=0.
       denom=0.
       z=matmul(A,r)
@@ -141,16 +141,16 @@ contains
 
       x=x+alpha*r
       r=r-alpha*z
-
-      if (abs(sum(r*r))<max) then
-        max=abs(sum(r*r))
+      norme=abs(sum(r*r))
+      if (norme<maxi) then
+        maxi=norme
       end if
-      call write(k,sqrt(sum(r*r)),"ResMin.txt")
+      call write(k,norme,"ResMin.txt")
 
       k=k+1
 
     end do
-    print*,"Pour ResiduMinimum le residu vaut ", max
+    print*,"Pour ResiduMinimum le residu vaut ", maxi
     print*,"il est atteint a l'iteration numero ",k
   end subroutine residu
 
@@ -388,7 +388,7 @@ contains
     k=0
 
 
-    kmax=150
+    kmax=10000
     eps=0.0001
 
 
