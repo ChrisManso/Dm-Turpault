@@ -22,7 +22,9 @@ contains
     kmax=100
     eps=0.01
     xnext=0.
+
     do while (k<kmax .and. max>eps .and. norme<1.E+30)
+
       do i=1,t
         sigma=0.
         diag=0.
@@ -77,15 +79,16 @@ contains
     kmax=100
 
 
+
     alpha=0.
     z=0.
-    eps=0.01
+    eps=0.1
 
     max= abs(sum(r*r))
     do while (k<kmax .and. max>eps .and. norme< 1.E+30)
 
       call multi_matCSR(AA,JA,IA,r,z,t)
-      
+
       nume=0.
       denom=0.
       do i=1,t
@@ -126,9 +129,7 @@ contains
     integer :: k, kmax,i
 
     eps=0.01
-    kmax=100
-    nume=0.
-    denom=0.
+
     alpha=0.
     z=0.
     Call multi_matCSR(AA,JA,IA,x,r,t)
@@ -136,10 +137,13 @@ contains
     r=b-r
     max=0
     k=0
+    kmax=100
     max=abs(sum(r*r))
 
     do while (k<kmax .and.  max>eps .and. norme<1.E+30)
       call multi_matCSR(AA,JA,IA,r,z,t)
+      nume=0.
+      denom=0.
       do i=1,t
         nume=nume+r(i)*z(i)
         denom=denom+z(i)*z(i)
