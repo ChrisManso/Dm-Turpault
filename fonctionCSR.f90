@@ -19,7 +19,7 @@ contains
     r=b-r
     max=sum(r*r)
     k=0
-    kmax=100
+    kmax=1000
     eps=0.01
     xnext=0.
 
@@ -69,20 +69,21 @@ contains
     real*8:: alpha,eps,nume,denom,max,norme
     integer :: k, kmax,i
 
-
+    print*,"hello3"
 
     call multi_matCSR(AA,JA,IA,x,r,t)
 
     r=b-r
 
     k=0
-    kmax=100
+
+    kmax=1000
 
 
-
+    print*,"hello2"
     alpha=0.
     z=0.
-    eps=0.1
+    eps=0.01
 
     max= abs(sum(r*r))
     do while (k<kmax .and. max>eps .and. norme< 1.E+30)
@@ -91,6 +92,7 @@ contains
 
       nume=0.
       denom=0.
+
       do i=1,t
         nume=nume+r(i)**2
         denom=denom+z(i)*r(i)
@@ -129,7 +131,7 @@ contains
     integer :: k, kmax,i
 
     eps=0.01
-
+    kmax=1000
     alpha=0.
     z=0.
     Call multi_matCSR(AA,JA,IA,x,r,t)
@@ -220,14 +222,20 @@ contains
 
     do i=1,t
       res=0.d0
+
       k=IA(i)
       l=IA(i+1)-1
+      print*,k,l
+      print*,i
       do j=k,l
+        print*,"je suis j1",j
         res=res+AA(j)*F(JA(j))
+        print*,"je suis j2",j
       end do
       AF(i)=res
-
+      print*,i
     end do
+    print*,"hello5"
   end subroutine multi_matCSR
 
 
