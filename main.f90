@@ -38,7 +38,7 @@ program main
 
   !!! PARAMETRE
 
-  t=20 !/!\ choisie la dimension
+  t=1000 !/!\ choisie la dimension
   Allocate(x(1:t),x0(1:t),b(1:t),A(1:t,1:t),G(1:t,1:t),Id(1:t,1:t))
   x0=1.
 
@@ -51,7 +51,7 @@ program main
     do i=1,t
        do j=1,t
          call random_number(nombre)
-          G(i,j)=nombre/15
+          G(i,j)=nombre
     end do
   end do
 
@@ -73,6 +73,14 @@ program main
   Print*," "
 
 
+  x=x0  !Réinitialisation du vecteur d'entré
+  t1= wtime ( )
+  call precon_residu_droite_SSOR_FlexibleC(A,b,x,t)
+  t2=wtime ( )
+  !!print*,"le x de precon_residu_droite_SSOR_FlexibleC",x
+  print*,"temps de precon_residu_droite_SSOR_FlexibleC =",t2-t1
+  Print*," "
+
 
   x=x0  !Réinitialisation du vecteur d'entré
 
@@ -80,7 +88,7 @@ program main
   call residu(A,b,x,t)
 t2=wtime ( )
   print*,"temps residu =",t2-t1
-  !!print*,"residu : ",x
+  ! print*,"residu : ",x
   Print*," "
   x=1.
 
@@ -88,12 +96,12 @@ t2=wtime ( )
 
 
 
-  x=x0  !Réinitialisation du vecteur d'entré
-  t1= wtime ( )
-  call Jacobi(A,b,x,t)
-  t2=wtime ( )
-  !!print*,"temps de jacobi=",t2-t1
-  Print*," "
+  ! x=x0  !Réinitialisation du vecteur d'entré
+  ! t1= wtime ( )
+  ! call Jacobi(A,b,x,t)
+  ! t2=wtime ( )
+  ! !!print*,"temps de jacobi=",t2-t1
+  ! Print*," "
 
 
    !!Réinitialisation du vecteur d'entré
@@ -117,14 +125,16 @@ t2=wtime ( )
     ! call precon_residu_SSOR(A,b,x,t)
     ! t2=wtime ( )
     ! print*,"temps de precon_residu_SSOR =",t2-t1
+    ! print*,"le x de precon_residu_SSOR ",x
     ! Print*," "
-    !
-    !
+
+
     ! x=x0  !Réinitialisation du vecteur d'entré
     ! t1= wtime ( )
     ! call precon_residu_Jacobi(A,b,x,t)
     ! t2=wtime ( )
     ! print*,"temps de precon_residu_Jacobi = ",t2-t1
+    ! print*,"le x de precon_residu_Jacobi ",x
     ! Print*," "
     !
     !
@@ -168,14 +178,14 @@ print*, "-----------------------------------------------------------------------
   !
   !
   !
-  ! x=x0  !Réinitialisation du vecteur d'entré
-  ! t1= wtime ( )
-  !
-  ! call precon_residu_Jacobi(A,b,x,t)
-  ! t2=wtime ( )
-  ! print*,"le x de precon_residu_Jacobi :",x
-  ! !print*,"temps de precon_residu_Jacobi =",t2-t1
-  ! Print*," "
+  x=x0  !Réinitialisation du vecteur d'entré
+  t1= wtime ( )
+
+  call precon_residu_Jacobi(A,b,x,t)
+  t2=wtime ( )
+  !!print*,"le x de precon_residu_Jacobi :",x
+  !print*,"temps de precon_residu_Jacobi =",t2-t1
+  Print*," "
 
 
 
@@ -207,29 +217,29 @@ print*, "-----------------------------------------------------------------------
 
 
 
-  ! x=1.  !Réinitialisation du vecteur d'entré
-  ! t1= wtime ( )
-  ! call precon_residu_droite_Jacobi(A,b,x,t)
-  ! t2=wtime ( )
-  ! print*,"le x de precon_residu_droite_Jacobi",x
-  ! !!print*,"temps de precon_residu_droite_Jacobi =",t2-t1
-  ! Print*," "
-  !
-  !
+  x=1.  !Réinitialisation du vecteur d'entré
+  t1= wtime ( )
+  call precon_residu_droite_Jacobi(A,b,x,t)
+  t2=wtime ( )
+  !print*,"le x de precon_residu_droite_Jacobi",x
+  print*,"temps de precon_residu_droite_Jacobi =",t2-t1
+  Print*," "
+
+
   ! x=x0  !Réinitialisation du vecteur d'entré
   ! t1= wtime ( )
   ! call precon_residu_droite_SSOR(A,b,x,t)
   ! t2=wtime ( )
-  ! print*,"le x de precon_residu_droite_SSOR",x
+  ! !print*,"le x de precon_residu_droite_SSOR",x
   ! print*,"temps de precon_residu_droite_SSOR =",t2-t1
   ! Print*," "
-  !
-  !
+
+
   ! x=x0  !Réinitialisation du vecteur d'entré
   ! t1= wtime ( )
   ! call precon_residu_droite_SSOR_FlexibleB(A,b,x,t)
   ! t2=wtime ( )
-  ! print*,"le x de precon_residu_droite_SSOR_FlexibleB",x
+  ! !print*,"le x de precon_residu_droite_SSOR_FlexibleB",x
   ! print*,"temps de precon_residu_droite_SSOR_FlexibleB =",t2-t1
   ! Print*," "
 
@@ -238,7 +248,7 @@ print*, "-----------------------------------------------------------------------
   ! t1= wtime ( )
   ! call precon_residu_droite_SSOR_FlexibleC(A,b,x,t)
   ! t2=wtime ( )
-  ! print*,"le x de precon_residu_droite_SSOR_FlexibleC",x
+  ! !!print*,"le x de precon_residu_droite_SSOR_FlexibleC",x
   ! print*,"temps de precon_residu_droite_SSOR_FlexibleC =",t2-t1
   ! Print*," "
 
