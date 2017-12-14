@@ -73,10 +73,13 @@ contains
 
     call multi_matCSR(AA,JA,IA,x,r,t)
 
+
+
     r=b-r
 
     k=0
     kmax=10000
+
 
 
     alpha=0.
@@ -139,6 +142,7 @@ contains
     max=0
     k=0
     max=abs(sum(r*r))
+    kmax=1000
 
     do while (k<kmax .and.  max>eps .and. norme<1.E+30)
       call multi_matCSR(AA,JA,IA,r,z,t)

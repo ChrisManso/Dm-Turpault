@@ -16,109 +16,101 @@ program main
 
 
 
-  !!! PARAMETRE
-  t=50 !/!\ choisie la dimension
-  Allocate(x(1:t),x0(1:t),b(1:t),A(1:t,1:t),G(1:t,1:t),Id(1:t,1:t))
-  x0=1.
-
-
-  !!! Création de la matrice An
-    t=5
-
-     !/!\ choisie la dimension
-
-    ! Allocate(x(1:t),b(1:t),A(1:t,1:t),G(1:t,1:t),Id(1:t,1:t))
-    alpha=1
-    do i=1,t
-       do j=1,t
-         call random_number(nombre)
-          G(i,j)=nombre/real(t)
-    end do
-  end do
-
-  Id=reshape((/1,((0,i=1,t),1,j=1,t-1)/),(/t,t/))
-  A=alpha*Id+matmul(transpose(G),G)
-
-  !!! Initialisation de notre membre de droite, la matrice B
-  b=1.
-  b=b/sqrt(sum(b*b))
-
-
-  !!! ALGORYTHME
-  x=x0  !Réinitialisation du vecteur d'entré
-  t1= wtime ( )
-  call GPO(A,b,x,t)
-  t2= wtime ( )
-  print*,"temps de GPO =",t2-t1
-  Print*," "
-
-
-  x=x0  !Réinitialisation du vecteur d'entré
-  t1= wtime ( )
-  call residu(A,b,x,t) !! celle ci non plus
-  t2=wtime ( )
-  print*,"temps residu =",t2-t1
-  Print*," "
-
-
-  x=x0  !Réinitialisation du vecteur d'entré
-  t1= wtime ( )
-  call Jacobi(A,b,x,t)
-  t2=wtime ( )
-  print*,"temps de jacobi=",t2-t1
-  Print*," "
-
-  x=x0  !Réinitialisation du vecteur d'entré
-  call GMRes(A,b,x,t)
-  ! print*,"temps de jacobi=",t2-t1
-  Print*, "GMres : ", x
-
-
-  ! x=x0  !Réinitialisation du vecteur d'entré
-  ! t1= wtime ( )
-  ! call GMRes(A,b,x,t)
-  ! t2=wtime ( )
-  ! print*,"temps de GMRes=",t2-t1
-  ! Print*," "
-
-
-
-  !!! PRECONDITIONNEUR
-    ! x=x0  !Réinitialisation du vecteur d'entré
-    ! t1= wtime ( )
-    ! call precon_residu_SSOR(A,b,x,t)
-    ! t2=wtime ( )
-    ! print*,"temps de precon_residu_SSOR =",t2-t1
-    ! Print*," "
-    !
-    !
-    ! x=x0  !Réinitialisation du vecteur d'entré
-    ! t1= wtime ( )
-    ! call precon_residu_Jacobi(A,b,x,t)
-    ! t2=wtime ( )
-    ! print*,"temps de precon_residu_Jacobi = ",t2-t1
-    ! Print*," "
-    !
-    !
-    ! x=x0  !Réinitialisation du vecteur d'entré
-    ! t1= wtime ( )
-    ! call precon_residu_droite_Jacobi(A,b,x,t)
-    ! t2=wtime ( )
-    ! print*,"temps de precon_residu_droite_Jacobi =",t2-t1
-    ! Print*," "
-    !
-
-  !!! Liberation de la mémoire
-
-  !  deallocate(x,x0,b,A,G,Id)
-
-
-
-
-
-
-
-
+!   !!! PARAMETRE
+!   t=100 !/!\ choisie la dimension
+!   Allocate(x(1:t),x0(1:t),b(1:t),A(1:t,1:t),G(1:t,1:t),Id(1:t,1:t))
+!   x0=1.
+!
+!
+!   !!! Création de la matrice An
+!     t=2
+!
+!      !/!\ choisie la dimension
+!
+!     ! Allocate(x(1:t),b(1:t),A(1:t,1:t),G(1:t,1:t),Id(1:t,1:t))
+!     alpha=1
+!     do i=1,t
+!        do j=1,t
+!          call random_number(nombre)
+!           G(i,j)=nombre/real(t)
+!     end do
+!   end do
+!
+!   Id=reshape((/1,((0,i=1,t),1,j=1,t-1)/),(/t,t/))
+!   A=alpha*Id+matmul(transpose(G),G)
+!
+!   !!! Initialisation de notre membre de droite, la matrice B
+!   b=1.
+!   b=b/sqrt(sum(b*b))
+!
+!
+!   !!! ALGORYTHME
+!   x=x0  !Réinitialisation du vecteur d'entré
+!   t1= wtime ( )
+!   call GPO(A,b,x,t)
+!   t2= wtime ( )
+!   print*,"temps de GPO =",t2-t1
+!   Print*," "
+!
+!
+!   x=x0  !Réinitialisation du vecteur d'entré
+!   t1= wtime ( )
+!   call residu(A,b,x,t) !! celle ci non plus
+!   t2=wtime ( )
+!   print*,"temps residu =",t2-t1
+!   Print*," "
+!
+!
+!   x=x0  !Réinitialisation du vecteur d'entré
+!   t1= wtime ( )
+!   call Jacobi(A,b,x,t)
+!   t2=wtime ( )
+!   print*,"temps de jacobi=",t2-t1
+!   Print*," "
+!
+!   ! x=x0  !Réinitialisation du vecteur d'entré
+!   ! call GMRes(A,b,x,t)
+!   ! ! print*,"temps de jacobi=",t2-t1
+!   ! Print*, "GMres : ", x
+!
+!
+!   ! x=x0  !Réinitialisation du vecteur d'entré
+!   ! t1= wtime ( )
+!   ! call GMRes(A,b,x,t)
+!   ! t2=wtime ( )
+!   ! print*,"temps de GMRes=",t2-t1
+!   ! Print*," "
+!
+!
+!
+!   !!! PRECONDITIONNEUR
+!     ! x=x0  !Réinitialisation du vecteur d'entré
+!     ! t1= wtime ( )
+!     ! call precon_residu_SSOR(A,b,x,t)
+!     ! t2=wtime ( )
+!     ! print*,"temps de precon_residu_SSOR =",t2-t1
+!     ! Print*," "
+!     !
+!     !
+!     ! x=x0  !Réinitialisation du vecteur d'entré
+!     ! t1= wtime ( )
+!     ! call precon_residu_Jacobi(A,b,x,t)
+!     ! t2=wtime ( )
+!     ! print*,"temps de precon_residu_Jacobi = ",t2-t1
+!     ! Print*," "
+!     !
+!     !
+!     ! x=x0  !Réinitialisation du vecteur d'entré
+!     ! t1= wtime ( )
+!     ! call precon_residu_droite_Jacobi(A,b,x,t)
+!     ! t2=wtime ( )
+!     ! print*,"temps de precon_residu_droite_Jacobi =",t2-t1
+!     ! Print*," "
+!     !
+!
+!   !!! Liberation de la mémoire
+!
+! deallocate(x,x0,b,A,G,Id)
 
 print*,"----------------------------------------------------------------------------------------"
 !!! ALGORYTHME CSR
