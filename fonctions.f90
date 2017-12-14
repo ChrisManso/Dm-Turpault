@@ -16,8 +16,10 @@ contains
 
     r=b-matmul(A,x)
     max=abs(sum(r*r))
-    kmax=10000
-    eps=0.01
+
+    kmax=100000
+    eps=0.000001
+
     k=0
     xnext=0.
     do while (k<kmax .and. max>eps)
@@ -60,12 +62,16 @@ contains
     r=b-r
 
     k=0
-    kmax=10000
+
+    kmax=100000
+
     nume=0.
     denom=0.
     alpha=0.
     z=0.
-    eps=0.01
+
+    eps=0.000001
+
 
     max= abs(sum(r*r))
     do while (k<kmax .and. max>eps)
@@ -106,8 +112,10 @@ contains
     integer :: k, kmax,i
 
 
-    kmax=10000
-    eps=0.01
+
+    kmax=100000
+    eps=0.00001
+
     nume=0.
     denom=0.
     alpha=0.
@@ -137,8 +145,8 @@ contains
       k=k+1
       call write(k,sqrt(sum(r*r)),"ResMin.txt")
     end do
-    print*,"Pour ResiduMinimum le residu vaut ", max
-    print*,"il est atteint a l'iteration numero ",k
+    !!print*,"Pour ResiduMinimum le residu vaut ", max
+    !print*,"il est atteint a l'iteration numero ",k
   end subroutine residu
 
 
@@ -166,8 +174,10 @@ contains
     nume=0.
     denom=0.
     k=0
-    kmax=10000
-    eps=0.01
+
+    kmax=100000
+    eps=0.000001
+
 
     max=abs(sum(r*r))
     do while((k<kmax .and.  max>eps))
@@ -206,11 +216,11 @@ contains
     real*8,dimension(t,t),intent(in)::A
     real*8,dimension(t),intent(in)::b
     real*8,dimension(t),intent(inout)::x
-    real*8,dimension(t,t)::M,L,L2,D,E,F
-    real*8,dimension(t)::r,z,q,w
-    real*8:: alpha,eps,nume,denom,max
-    integer :: k, kmax,i
-
+    real*8,dimension(t,t)::M,R1,Q1,D,E,F
+    real*8,dimension(t)::r,z,q,w,y
+    real*8:: alpha,eps,nume,denom,max,som
+    integer :: k, kmax,i,ui,uj
+print*,"hello"
     call multi_mat(r,A,x,t)
     r=b-r
     m=0.
@@ -232,24 +242,47 @@ contains
     end do
 
 
-    M=matmul(matmul((D-0.8*E),transpose(D)),(D-0.8*F))  !! construction du préconditionneur
+    M=matmul(matmul((D-0.5*E),transpose(D)),(D-0.5*F))  !! construction du préconditionneur
 
-    call cholesky(t,M,L,L2)
-    call reso(t,L,L2,r,q)
+    call givens(M,t,Q1,R1)
+
+    !! resolution du systeme Mq=r
+    w=matmul(transpose(Q1),r)
+    q(t) = w(t)/R1(t,t)
+        do ui=t-1,1,-1
+          som=0.
+          do uj=ui+1,t
+            som = som+R1(ui,uj)*q(uj)
+          end do
+          q(ui) = (w(ui)-som)/R1(ui,ui)
+       end do
 
     nume=0.
     denom=0.
     k=0
 
-    kmax=10000
-    eps=0.01
+
+    kmax=100000
+    eps=0.000001
+
 
     max=abs(sum(r*r))
     do while((k<kmax .and.  max>eps))
       call multi_mat(w,A,q,t)
 
-      call cholesky(t,M,L,L2)
-      call reso(t,L,L2,w,z)
+
+      !! resolution de Mz=w
+
+      y=matmul(transpose(Q1),w)
+      z(t) = y(t)/R1(t,t)
+          do ui=t-1,1,-1
+            som=0.
+            do uj=ui+1,t
+              som = som+R1(ui,uj)*z(uj)
+            end do
+            z(ui) = (y(ui)-som)/R1(ui,ui)
+         end do
+
 
       do i=1,t
         nume=nume+q(i)*z(i)
@@ -258,6 +291,7 @@ contains
       end do
 
       alpha=nume/denom
+
       x=x+alpha*q
       r=r-alpha*w
 
@@ -275,39 +309,42 @@ contains
   end subroutine precon_residu_SSOR
 
 
-  subroutine precon_residu_droite_Jacobi(A,b,x,t)
-    integer,intent(in)::t !!taille des matrices
-    real*8,dimension(t,t),intent(in)::A
-    real*8,dimension(t),intent(in)::b
-    real*8,dimension(t),intent(inout)::x
-    real*8,dimension(t,t)::M
-    real*8,dimension(t)::r,z,q,w
-    real*8:: alpha,eps,nume,denom,max
-    integer :: k, kmax,i
-    M=0.
-    do i=1,t
-      M(i,i)=A(i,i)
 
-      z(i)=x(i)*M(i,i)
-    end do
+ subroutine precon_residu_droite_Jacobi(A,b,x,t)
+   integer,intent(in)::t !!taille des matrices
+   real*8,dimension(t,t),intent(in)::A
+   real*8,dimension(t),intent(in)::b
+   real*8,dimension(t),intent(inout)::x
+   real*8,dimension(t,t)::M
+   real*8,dimension(t)::r,z,q,w,u
+   real*8:: alpha,eps,nume,denom,max,norme
+   integer :: k, kmax,i
+   M=0.
+   do i=1,t
+     M(i,i)=A(i,i)
+   end do
+   r=0.
+   r=b-matmul(A,x)
 
-    call multi_mat(r,matmul(A,transpose(M)),z,t)
-    r=b-r
 
     nume=0.
     denom=0.
     k=0
 
-    kmax=10000
-    eps=0.01
+
+   kmax=100000
+   eps=0.000001
+
 
     max=abs(sum(r*r))
 
 
-    do while((k<kmax .and.  max>eps))
 
-      !!resoudre Mz=r
-      do i=1,t
+   do while((k<kmax .and.  max>eps))
+     z=0.
+     !!resoudre Mz=r
+     do i=1,t
+
         z(i)=r(i)*M(i,i)
       end do
 
@@ -325,15 +362,253 @@ contains
       k=k+1
 
 
-      if (abs(sum(r*r))<max) then
-        max=abs(sum(r*r))
-      end if
+     norme=abs(sum(r*r))
+    if (norme<max) then
+        max=norme
+    end if
+
 
     end do
     print*,"Pour Residu preconditionne a droit par Jacobi le residu vaut ", max
     print*,"il est atteint a l'iteration numero ",k
 
   end subroutine precon_residu_droite_Jacobi
+
+ subroutine precon_residu_droite_SSOR(A,b,x,t)
+   integer,intent(in)::t !!taille des matrices
+   real*8,dimension(t,t),intent(in)::A
+   real*8,dimension(t),intent(in)::b
+   real*8,dimension(t),intent(inout)::x
+   real*8,dimension(t,t)::M,Q1,R1,D,E,F
+   real*8,dimension(t)::r,z,q,w,u
+   real*8:: alpha,eps,nume,denom,max,norme,som
+   integer :: k, kmax,i,ui,uj
+   M=0.
+
+   E=0.
+   D=0.
+   F=0.
+   do i=1,t
+     do j=1,t
+       if (i==j) then
+         D(i,j)=A(i,i)
+       else if (j<i) then
+         E(i,j)=-A(i,j)
+       else
+         F(i,j)=-A(i,j)
+       end if
+
+     end do
+   end do
+
+   M=matmul(matmul((D-0.8*E),transpose(D)),(D-0.8*F))  !! construction du préconditionneur
+
+
+
+
+   r=0.
+
+   r=b-matmul(A,x)
+
+   nume=0.
+   denom=0.
+   k=0
+
+   kmax=100000
+   eps=0.000001
+
+   max=abs(sum(r*r))
+
+
+   do while((k<kmax .and.  max>eps))
+
+     call givens(M,t,Q1,R1)
+
+     !! resolution du systeme Mq=r
+     w=matmul(transpose(Q1),r)
+     z(t) = w(t)/R1(t,t)
+         do ui=t-1,1,-1
+           som=0.
+           do uj=ui+1,t
+             som = som+R1(ui,uj)*z(uj)
+           end do
+           z(ui) = (w(ui)-som)/R1(ui,ui)
+        end do
+
+      w=matmul(A,z)
+
+     do i=1,t
+        nume=nume+r(i)*w(i)
+        denom=denom+w(i)*w(i)
+     end do
+
+     alpha=nume/denom
+
+     x=x+alpha*z
+     r=r-alpha*w
+     k=k+1
+
+     norme=abs(sum(r*r))
+    if (norme<max) then
+        max=norme
+    end if
+
+   end do
+   print*,"precon_residu_droite_SSOR = ",max,k
+
+ end subroutine precon_residu_droite_SSOR
+
+
+ subroutine precon_residu_droite_SSOR_FlexibleB(A,b,x,t)
+   integer,intent(in)::t !!taille des matrices
+   real*8,dimension(t,t),intent(in)::A
+   real*8,dimension(t),intent(in)::b
+   real*8,dimension(t),intent(inout)::x
+   real*8,dimension(t,t)::M,Q1,R1,D,E,F
+   real*8,dimension(t)::r,z,q,w,u
+   real*8:: alpha,eps,nume,denom,max,norme,som,Para
+   integer :: k, kmax,i,ui,uj
+   M=0.
+
+   E=0.
+   D=0.
+   F=0.
+   do i=1,t
+     do j=1,t
+       if (i==j) then
+         D(i,j)=A(i,i)
+       else if (j<i) then
+         E(i,j)=-A(i,j)
+       else
+         F(i,j)=-A(i,j)
+       end if
+
+     end do
+   end do
+   para=1.5
+   M=matmul(matmul((D-para*E),transpose(D)),(D-para*F))  !! construction du préconditionneur
+
+   r=0.
+
+   r=b-matmul(A,x)
+
+   nume=0.
+   denom=0.
+   k=0
+
+   kmax=100000
+   eps=0.000001
+
+   max=abs(sum(r*r))
+
+
+   do while((k<kmax .and.  max>eps))
+
+
+     if (para==0.5) then
+       para=1.5
+     else
+       para=0.5
+     end if
+     M=matmul(matmul((D-para*E),transpose(D)),(D-para*F))
+     call givens(M,t,Q1,R1)
+
+     !! resolution du systeme Mz=r
+     w=matmul(transpose(Q1),r)
+     z(t) = w(t)/R1(t,t)
+         do ui=t-1,1,-1
+           som=0.
+           do uj=ui+1,t
+             som = som+R1(ui,uj)*z(uj)
+           end do
+           z(ui) = (w(ui)-som)/R1(ui,ui)
+        end do
+
+      w=matmul(A,z)
+
+
+
+     do i=1,t
+        nume=nume+r(i)*w(i)
+        denom=denom+w(i)*w(i)
+     end do
+
+     alpha=nume/denom
+
+     x=x+alpha*z
+     r=r-alpha*w
+     k=k+1
+
+     norme=abs(sum(r*r))
+    if (norme<max) then
+        max=norme
+    end if
+
+   end do
+   print*,"precon_residu_droite_SSOR_FlexibleB = ",max,k
+
+ end subroutine precon_residu_droite_SSOR_FlexibleB
+
+
+
+
+ subroutine precon_residu_droite_SSOR_FlexibleC(A,b,x,t)
+   integer,intent(in)::t !!taille des matrices
+   real*8,dimension(t,t),intent(in)::A
+   real*8,dimension(t),intent(in)::b
+   real*8,dimension(t),intent(inout)::x
+   real*8,dimension(t,t)::M,Q1,R1,D,E,F
+   real*8,dimension(t)::r,z,q,w,u
+   real*8:: alpha,eps,nume,denom,max,norme,som,Para
+   integer :: k, kmax,i,ui,uj
+   M=A
+
+   r=0.
+
+   r=b-matmul(A,x)
+
+   nume=0.
+   denom=0.
+   k=0
+
+   kmax=100000
+   eps=0.000001
+
+   max=abs(sum(r*r))
+
+   do while((k<kmax .and.  max>eps))
+
+     !! resolution du systeme Mz=r
+    call residu(A,r,z,t)
+
+      w=matmul(A,z)
+
+
+
+     do i=1,t
+        nume=nume+r(i)*w(i)
+        denom=denom+w(i)*w(i)
+     end do
+
+     alpha=nume/denom
+
+     x=x+alpha*z
+     r=r-alpha*w
+     k=k+1
+
+     norme=abs(sum(r*r))
+    if (norme<max) then
+        max=norme
+    end if
+
+   end do
+
+   print*,"precon_residu_droite_SSOR_FlexibleC = ",max,k
+
+ end subroutine precon_residu_droite_SSOR_FlexibleC
+
+
+
 
 
 
@@ -394,8 +669,10 @@ contains
     r=b-matmul(A,x)
     beta=sqrt(sum(r*r))
     k=0
+
     kmax=10
-    eps=0.01
+    eps=0.001
+
     do while(beta>eps .and. k<kmax)
       Vm=0.
        call Arnoldi(A,r,Hm,v,t)
