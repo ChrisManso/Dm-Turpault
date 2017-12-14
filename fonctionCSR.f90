@@ -74,8 +74,7 @@ contains
     k=0
     kmax=10000
 
-    nume=0.
-    denom=0.
+
     alpha=0.
     z=0.
     eps=0.1
@@ -84,7 +83,8 @@ contains
     do while (k<kmax .and. max>eps)
 
       call multi_matCSR(AA,JA,IA,r,z,t)
-
+      nume=0.
+      denom=0.
 
       do i=1,t
         nume=nume+r(i)**2
@@ -122,8 +122,7 @@ contains
 
     kmax=100
     eps=0.01
-    nume=0.
-    denom=0.
+
     alpha=0.
     z=0.
     Call multi_matCSR(AA,JA,IA,x,r,t)
@@ -135,6 +134,8 @@ contains
 
     do while (k<kmax .and.  max>eps)
       call multi_matCSR(AA,JA,IA,r,z,t)
+      nume=0.
+      denom=0.
       do i=1,t
         nume=nume+r(i)*z(i)
         denom=denom+z(i)*z(i)

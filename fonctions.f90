@@ -58,25 +58,27 @@ contains
     real*8:: alpha,eps,nume,denom,max
     integer :: k, kmax,i
 
-    call multi_mat(r,A,x,t)
-    r=b-r
+
+    r=b-matmul(A,x)
 
     k=0
 
     kmax=100000
+    eps=0.000001
 
     nume=0.
     denom=0.
     alpha=0.
     z=0.
 
-    eps=0.000001
 
 
     max= abs(sum(r*r))
     do while (k<kmax .and. max>eps)
-      call multi_mat(z,A,r,t)
 
+      nume=0.
+      denom=0.
+      z=matmul(A,r)
       do i=1,t
         nume=nume+r(i)**2
         denom=denom+z(i)*r(i)
@@ -114,10 +116,9 @@ contains
 
 
     kmax=100000
-    eps=0.00001
+    eps=0.000001
 
-    nume=0.
-    denom=0.
+
     alpha=0.
     z=0.
     Call multi_mat(r,A,x,t)
@@ -128,7 +129,9 @@ contains
     max=abs(sum(r*r))
 
     do while (k<kmax .and.  max>eps)
-      call multi_mat(z,A,r,t)
+      nume=0.
+      denom=0.
+      z=matmul(A,r)
       do i=1,t
         nume=nume+r(i)*z(i)
         denom=denom+z(i)*z(i)
@@ -145,8 +148,8 @@ contains
       k=k+1
       call write(k,sqrt(sum(r*r)),"ResMin.txt")
     end do
-    !!print*,"Pour ResiduMinimum le residu vaut ", max
-    !print*,"il est atteint a l'iteration numero ",k
+    print*,"Pour ResiduMinimum le residu vaut ", max
+    print*,"il est atteint a l'iteration numero ",k
   end subroutine residu
 
 
@@ -171,8 +174,7 @@ contains
       q(i)=r(i)*M(i,i)
     end do
 
-    nume=0.
-    denom=0.
+
     k=0
 
     kmax=100000
@@ -183,7 +185,8 @@ contains
     do while((k<kmax .and.  max>eps))
 
       call multi_mat(w,A,q,t)
-
+      nume=0.
+      denom=0.
       do i=1,t
         z(i)=w(i)*M(i,i)
 
@@ -283,7 +286,8 @@ print*,"hello"
             z(ui) = (y(ui)-som)/R1(ui,ui)
          end do
 
-
+         nume=0.
+         denom=0.
       do i=1,t
         nume=nume+q(i)*z(i)
         denom=denom+z(i)*z(i)
@@ -327,13 +331,12 @@ print*,"hello"
    r=b-matmul(A,x)
 
 
-    nume=0.
-    denom=0.
+
     k=0
 
 
-   kmax=100000
-   eps=0.000001
+    kmax=100000
+    eps=0.000001
 
 
     max=abs(sum(r*r))
@@ -349,6 +352,9 @@ print*,"hello"
       end do
 
       w=matmul(A,z)
+
+      nume=0.
+      denom=0.
 
       do i=1,t
         nume=nume+r(i)*w(i)
@@ -410,8 +416,7 @@ print*,"hello"
 
    r=b-matmul(A,x)
 
-   nume=0.
-   denom=0.
+
    k=0
 
    kmax=100000
@@ -437,6 +442,8 @@ print*,"hello"
 
       w=matmul(A,z)
 
+      nume=0.
+      denom=0.
      do i=1,t
         nume=nume+r(i)*w(i)
         denom=denom+w(i)*w(i)
@@ -492,8 +499,7 @@ print*,"hello"
 
    r=b-matmul(A,x)
 
-   nume=0.
-   denom=0.
+
    k=0
 
    kmax=100000
@@ -526,7 +532,8 @@ print*,"hello"
 
       w=matmul(A,z)
 
-
+      nume=0.
+      denom=0.
 
      do i=1,t
         nume=nume+r(i)*w(i)
@@ -583,7 +590,8 @@ print*,"hello"
 
       w=matmul(A,z)
 
-
+      nume=0.
+      denom=0.
 
      do i=1,t
         nume=nume+r(i)*w(i)
