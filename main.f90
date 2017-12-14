@@ -14,27 +14,7 @@ program main
   real*8::nombre,t1,t2,alpha
   integer::nlen,ncols,nlines,nelmt,t,i,j
 
-  !!! Exemple d'uitilisation des fonctions NbrMat et readMat
-  ! nlen=len('matrix/bcsstk18.mtx')
-  ! call NbrMat('matrix/bcsstk18.mtx',nlen,ncols,nlines,nelmt)
-  ! !print*, ncols,nlines,nelmt
-  ! allocate (AA(1:nelmt),JA(1:nelmt),IA(1:ncols+1))
-  ! call readMat('matrix/bcsstk18.mtx',ncols,nelmt,AA,IA,JA,nlen)
 
-
-  ! !! Exemple d'utilisation de la fonctions DenseToCSR
-  ! Test(1,:)=(/12.,4.,0.,0./)
-  ! Test(2,:)=(/0.,7.,9.,-3./)
-  ! Test(3,:)=(/1.,0.,5.,3.4/)
-  ! Test(4,:)=(/0.,0.,-3.9,1./)
-  ! call NbrElemt(Test,nelmt,nlines)
-
-  ! !print*,nelmt,nlines
-  ! allocate (AA(1:nelmt),JA(1:nelmt),IA(1:nlines+1))
-  ! call DenseToCSR(Test,AA,JA,IA,nelmt)
-  ! !print*, "AA vaut",AA
-  ! !print*, "JA vaut",JA
-  ! !print*, "IA vaut",IA
 
   !!! PARAMETRE
 
@@ -137,24 +117,68 @@ t2=wtime ( )
     !
 
   !!! Liberation de la mémoire
-    !deallocate(x,x0,b,A,G,Id)
+
+  !  deallocate(x,x0,b,A,G,Id)
+
+
+
+
+
+ 
 
 
 
 print*,"----------------------------------------------------------------------------------------"
+!!! ALGORYTHME CSR
 ! nlen=len('matrix/bcsstk18.mtx')
 ! call NbrMat('matrix/bcsstk18.mtx',nlen,ncols,nlines,nelmt)
 ! allocate (AA(1:nelmt),JA(1:nelmt),IA(1:ncols+1),b(1:ncols),x(1:ncols),x0(1:ncols))
 ! call readMat('matrix/bcsstk18.mtx',ncols,nelmt,AA,IA,JA,nlen)
-! b=1.
-! b=b/sqrt(sum(b*b))
-! x0=1.
+
+! nlen=len('matrix/fidapm37.mtx')
+! call NbrMat('matrix/fidapm37.mtx',nlen,ncols,nlines,nelmt)
+! allocate (AA(1:nelmt),JA(1:nelmt),IA(1:ncols+1),b(1:ncols),x(1:ncols),x0(1:ncols))
+! IA=0.
+! call readMat('matrix/fidapm37.mtx',ncols,nelmt,AA,IA,JA,nlen)
+
+! nlen=len('matrix/fs_541_4.mtx')
+! call NbrMat('matrix/fs_541_4.mtx',nlen,ncols,nlines,nelmt)
+! allocate (AA(1:nelmt),JA(1:nelmt),IA(1:ncols+1),b(1:ncols),x(1:ncols),x0(1:ncols))
+! call readMat('matrix/fs_541_4.mtx',ncols,nelmt,AA,IA,JA,nlen)
+
+nlen=len('matrix/fs_760_3.mtx')
+call NbrMat('matrix/fs_760_3.mtx',nlen,ncols,nlines,nelmt)
+allocate (AA(1:nelmt),JA(1:nelmt),IA(1:ncols+1),b(1:ncols),x(1:ncols),x0(1:ncols))
+call readMat('matrix/fs_760_3.mtx',ncols,nelmt,AA,IA,JA,nlen)
+
+b=1.
+b=b/sqrt(sum(b*b))
+x0=1.
+
+x=x0  !Réinitialisation du vecteur d'entré
+t1= wtime ( )
+call GPOCSR(AA,JA,IA,b,x,ncols)
+t2=wtime ( )
+print*,"temps de GPO en CSR=",t2-t1
+Print*," "
 
 
+x=x0  !Réinitialisation du vecteur d'entré
+t1= wtime ( )
+call residuCSR(AA,JA,IA,b,x,ncols)
+t2=wtime ( )
+print*,"temps de ResMin en CSR=",t2-t1
+Print*," "
 
-print*, "-------------------------------------------------------------------------------------"
+x=x0  !Réinitialisation du vecteur d'entré
+t1= wtime ( )
+call JacobiCSR(AA,JA,IA,b,x,ncols)
+t2=wtime ( )
+print*,"temps de Jacobi en CSR=",t2-t1
+Print*," "
 
 !!! PRECONDITIONNEUR
+
 
   ! x=x0  !Réinitialisation du vecteur d'entré
   ! t1= wtime ( )
@@ -176,34 +200,6 @@ print*, "-----------------------------------------------------------------------
   ! print*,"le x de precon_residu_Jacobi :",x
   ! !print*,"temps de precon_residu_Jacobi =",t2-t1
   ! Print*," "
-
-
-
-! x=x0  !Réinitialisation du vecteur d'entré
-! t1= wtime ( )
-! call GPOCSR(AA,IA,JA,b,x,ncols)
-! t2=wtime ( )
-! print*,"temps de GPO au format CSR=",t2-t1
-! Print*," "
-!
-!
-! x=x0  !Réinitialisation du vecteur d'entré
-! t1= wtime ( )
-! call residuCSR(AA,JA,IA,b,x,ncols)
-! t2=wtime ( )
-! print*,"temps du ResiduMin au format CSR=",t2-t1
-! Print*," "
-!
-!
-! x=x0  !Réinitialisation du vecteur d'entré
-! t1= wtime ( )
-! call JacobiCSR(AA,JA,IA,b,x,ncols)
-! t2=wtime ( )
-! print*,"temps de Jacobi au format CSR=",t2-t1
-! Print*," "
-!
-! deallocate(AA,JA,IA,b,x,x0)
-
 
 
 
