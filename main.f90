@@ -14,6 +14,7 @@ program main
   real*8::nombre,t1,t2,alpha,br
   integer::nlen,ncols,nlines,nelmt,t,i,j, userChoice
 
+!call Lecture("matrix/fs_760_3.mtx",A,t)
 
   !!! PARAMETRE
   print*, "Sur quelle matrice voulez-vous travailler ?"
@@ -55,7 +56,7 @@ program main
 
 
 
-!   t=20 !/!\ choisie la dimension
+  t=20 !/!\ choisie la dimension
  Allocate(x(1:t),x0(1:t),b(1:t),G(1:t,1:t),Id(1:t,1:t))!,A(1:t,1:t))
 x0=1.
 !
@@ -136,13 +137,13 @@ t2=wtime ( )
 
 
   !!! PRECONDITIONNEUR
-    ! x=x0  !Réinitialisation du vecteur d'entré
-    ! t1= wtime ( )
-    ! call precon_residu_SSOR(A,b,x,t)
-    ! t2=wtime ( )
-    ! print*,"temps de precon_residu_SSOR =",t2-t1
-    ! print*,"le x de precon_residu_SSOR ",x
-    ! Print*," "
+    x=x0  !Réinitialisation du vecteur d'entré
+    t1= wtime ( )
+    call precon_residu_SSOR(A,b,x,t)
+    t2=wtime ( )
+    print*,"temps de precon_residu_SSOR =",t2-t1
+    print*,"le x de precon_residu_SSOR ",x
+    Print*," "
 
 
     ! x=x0  !Réinitialisation du vecteur d'entré
@@ -294,13 +295,13 @@ deallocate(AA,JA,IA,b,x,x0)
   !
   !
 
-  ! x=x0  !Réinitialisation du vecteur d'entré
-  ! t1= wtime ( )
-  ! call precon_residu_droite_SSOR(A,b,x,t)
-  ! t2=wtime ( )
-  ! !print*,"le x de precon_residu_droite_SSOR",x
-  ! print*,"temps de precon_residu_droite_SSOR =",t2-t1
-  ! Print*," "
+  x=x0  !Réinitialisation du vecteur d'entré
+  t1= wtime ( )
+  call precon_residu_droite_SSOR(A,b,x,t)
+  t2=wtime ( )
+  !print*,"le x de precon_residu_droite_SSOR",x
+  print*,"temps de precon_residu_droite_SSOR =",t2-t1
+  Print*," "
   !
   !
   ! x=x0  !Réinitialisation du vecteur d'entré
@@ -312,14 +313,14 @@ deallocate(AA,JA,IA,b,x,x0)
   ! Print*," "
 
 
-  ! x=x0  !Réinitialisation du vecteur d'entré
-  ! t1= wtime ( )
-  ! call precon_residu_droite_SSOR_FlexibleC(A,b,x,t)
-  ! t2=wtime ( )
-  ! !!print*,"le x de precon_residu_droite_SSOR_FlexibleC",x
-  ! print*,"temps de precon_residu_droite_SSOR_FlexibleC =",t2-t1
-  ! Print*," "
-
+   !Réinitialisation du vecteur d'entré
+!   t1= wtime ( )
+!   call precon_residu_droite_SSOR_FlexibleC(A,b,x,t)
+!   t2=wtime ( )
+!   !!print*,"le x de precon_residu_droite_SSOR_FlexibleC",x
+!   print*,"temps de precon_residu_droite_SSOR_FlexibleC =",t2-t1
+!   Print*," "
+deallocate(x,x0,b,A,G,Id)
 
 
 end program main

@@ -18,7 +18,7 @@ contains
     maxi=abs(sum(r*r))
 
     kmax=150
-    eps=0.0001
+    eps=0.000001
 
     k=0
     xnext=0.
@@ -64,8 +64,8 @@ contains
 
     k=0
 
-    kmax=100000
-    eps=0.0001
+    kmax=1000
+    eps=0.000001
 
     nume=0.
     denom=0.
@@ -116,8 +116,8 @@ contains
 
 
 
-    kmax=20000
-    eps=0.0001
+    kmax=1000
+    eps=0.000001
 
 
     alpha=0.
@@ -167,7 +167,7 @@ contains
 
 
     kmax=10
-    eps=0.0001
+    eps=0.000001
 
 
     alpha=0.
@@ -214,11 +214,11 @@ contains
     real*8,dimension(t),intent(inout)::x
     real*8,dimension(t,t)::M
     real*8,dimension(t)::r,z,q,w
-    real*8:: alpha,eps,nume,denom,maxi
+    real*8:: alpha,eps,nume,denom,maxi,norme
     integer :: k, kmax,i
 
-    call multi_mat(r,A,x,t)
-    r=b-r
+
+    r=b-matmul(A,x)
     m=0.
     do i=1,t
       M(i,i)=A(i,i)
@@ -228,8 +228,8 @@ contains
 
     k=0
 
-    kmax=500000
-    eps=0.0001
+    kmax=400
+    eps=0.000001
 
 
     maxi=abs(sum(r*r))
@@ -252,12 +252,12 @@ contains
 
       q=q-alpha*z
 
+      norme=abs(sum(r*r))
 
-
-      if (abs(sum(r*r))<maxi) then
-        maxi=abs(sum(r*r))
+      if (norme<maxi) then
+        maxi=norme
       end if
-      call write(k,sqrt(sum(r*r)),"ResJac.txt")
+      call write(k,norme,"ResJac.txt")
       k=k+1
     end do
     print*,"Pour Residu preconditinné a gauche par jacobi le residu vaut ", maxi
@@ -271,14 +271,14 @@ contains
     real*8,dimension(t,t),intent(in)::A
     real*8,dimension(t),intent(in)::b
     real*8,dimension(t),intent(inout)::x
-    real*8,dimension(t,t)::M,R1,Q1,D,E,F
+    real*8,dimension(t,t)::M,R1,Q1,D,E,F,D1
     real*8,dimension(t)::r,z,q,w,y
-    real*8:: alpha,eps,nume,denom,maxi,som
+    real*8:: alpha,eps,nume,denom,maxi,som,norme
     integer :: k, kmax,i,ui,uj
 
-    call multi_mat(r,A,x,t)
-    r=b-r
-    m=0.
+
+    r=b-matmul(A,x)
+    M=0.
 
 
     !! création des matrices E,D,F
@@ -289,6 +289,7 @@ contains
       do j=1,t
         if (i==j) then
           D(i,j)=A(i,i)
+          D1(i,j)=1./A(i,i)
         else if (j<i) then
           E(i,j)=-A(i,j)
         else
@@ -298,10 +299,12 @@ contains
       end do
     end do
 
-
-    M=matmul(matmul((D-0.5*E),transpose(D)),(D-0.5*F))  !! construction du préconditionneur
+    M=matmul((D-0.5*E),D1)
+    M=matmul(M,(D-0.5*F))  !! construction du préconditionneur
 
     call givens(M,t,Q1,R1)
+
+
 
     !! resolution du systeme Mq=r
     w=matmul(transpose(Q1),r)
@@ -313,17 +316,18 @@ contains
           end do
           q(ui) = (w(ui)-som)/R1(ui,ui)
        end do
-
+       print*,q
 
     k=0
 
-    kmax=150
-    eps=0.0001
+    kmax=400
+    eps=0.000001
 
 
     maxi=abs(sum(r*r))
     do while((k<kmax .and.  maxi>eps))
-      call multi_mat(w,A,q,t)
+      w=0.
+      w=Matmul(A,q)
 
 
       !! resolution de Mz=w
@@ -353,11 +357,11 @@ contains
 
       q=q-alpha*z
 
-
-      if (abs(sum(r*r))<maxi) then
-        maxi=abs(sum(r*r))
+      norme=abs(sum(r*r))
+      if (norme<maxi) then
+        maxi=norme
       end if
-      call write(k,sqrt(sum(r*r)),"ResSSO.txt")
+      call write(k,norme,"ResSSO.txt")
       k=k+1
     end do
 
@@ -388,8 +392,8 @@ contains
     k=0
 
 
-    kmax=50000
-    eps=0.0001
+    kmax=100000
+    eps=0.000001
 
 
     maxi=abs(sum(r*r))
@@ -439,7 +443,7 @@ contains
    real*8,dimension(t,t),intent(in)::A
    real*8,dimension(t),intent(in)::b
    real*8,dimension(t),intent(inout)::x
-   real*8,dimension(t,t)::M,Q1,R1,D,E,F
+   real*8,dimension(t,t)::M,Q1,R1,D,E,F,D1
    real*8,dimension(t)::r,z,q,w,u
    real*8:: alpha,eps,nume,denom,maxi,norme,som
    integer :: k, kmax,i,ui,uj
@@ -451,7 +455,8 @@ contains
    do i=1,t
      do j=1,t
        if (i==j) then
-         D(i,j)=A(i,i)
+         D(i,j)=A(i,j)
+         D1(i,j)=1./A(i,j)
        else if (j<i) then
          E(i,j)=-A(i,j)
        else
@@ -460,8 +465,8 @@ contains
 
      end do
    end do
-
-   M=matmul(matmul((D-0.8*E),transpose(D)),(D-0.8*F))  !! construction du préconditionneur
+   M=matmul((D-0.8*E),D1)
+   M=matmul(M,(D-0.8*F))  !! construction du préconditionneur
 
 
 
@@ -474,7 +479,7 @@ contains
    k=0
 
    kmax=150
-   eps=0.0001
+   eps=0.000001
 
    maxi=abs(sum(r*r))
 
@@ -526,7 +531,7 @@ contains
    real*8,dimension(t,t),intent(in)::A
    real*8,dimension(t),intent(in)::b
    real*8,dimension(t),intent(inout)::x
-   real*8,dimension(t,t)::M,Q1,R1,D,E,F
+   real*8,dimension(t,t)::M,Q1,R1,D,E,F,D1
    real*8,dimension(t)::r,z,q,w,u
    real*8:: alpha,eps,nume,denom,maxi,norme,som,Para
    integer :: k, kmax,i,ui,uj
@@ -539,6 +544,7 @@ contains
      do j=1,t
        if (i==j) then
          D(i,j)=A(i,i)
+         D1(i,j)=1./A(i,j)
        else if (j<i) then
          E(i,j)=-A(i,j)
        else
@@ -548,7 +554,7 @@ contains
      end do
    end do
    para=1.5
-   M=matmul(matmul((D-para*E),transpose(D)),(D-para*F))  !! construction du préconditionneur
+   M=matmul(matmul((D-para*E),D1),(D-para*F))  !! construction du préconditionneur
 
    r=0.
 
@@ -558,7 +564,7 @@ contains
    k=0
 
    kmax=150
-   eps=0.0001
+   eps=0.000001
 
    maxi=abs(sum(r*r))
 
@@ -571,7 +577,7 @@ contains
      else
        para=0.5
      end if
-     M=matmul(matmul((D-para*E),transpose(D)),(D-para*F))
+     M=matmul(matmul((D-para*E),D1),(D-para*F))
      call givens(M,t,Q1,R1)
 
      !! resolution du systeme Mz=r
@@ -634,8 +640,8 @@ contains
    denom=0.
    k=0
 
-   kmax=150
-   eps=0.0001
+   kmax=1000
+   eps=0.000001
 
    maxi=abs(sum(r*r))
 
