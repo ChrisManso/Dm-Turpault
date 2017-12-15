@@ -73,6 +73,8 @@ contains
 
     call multi_matCSR(AA,JA,IA,x,r,t)
 
+
+
     r=b-r
 
     k=0
@@ -80,7 +82,7 @@ contains
     kmax=1000
 
 
-    print*,"hello2"
+
     alpha=0.
     z=0.
     eps=0.01
@@ -141,6 +143,7 @@ contains
     k=0
     kmax=100
     max=abs(sum(r*r))
+    kmax=1000
 
     do while (k<kmax .and.  max>eps .and. norme<1.E+30)
       call multi_matCSR(AA,JA,IA,r,z,t)
