@@ -106,7 +106,7 @@ program main
 !!! -------------------- PRECONDITIONNEUR ------------------------!!!
 
 
-!--------- PRECONDIONNEUR DROITE SSORS FLEXIBLE ------- !
+!--------- PRECONDIONNEUR FLEXIBLE ------- !
 ! Réinitialisation du vecteur d'entré
 !  t1= wtime ( )
 !  call precon_residu_droite_SSOR_FlexibleC(A,b,x,t)
@@ -115,7 +115,7 @@ program main
 !  print*,"temps de precon_residu_droite_SSOR_FlexibleC =",t2-t1
 !  Print*," "
 
-
+!-----------------  Préconditionneu gauche SSOR -----------------!
 ! Réinitialisation du vecteur d'entré
 ! x=1.
 ! t1= wtime ( )
@@ -146,7 +146,7 @@ program main
 ! Print*," "
 
 
-!------------ Préconditionneur droite ----------------!
+!------------ Préconditionneur droite Jacobi----------------!
 ! Réinitialisation du vecteur d'entré
 ! t1= wtime ( )
 ! call precon_residu_droite_Jacobi(A,b,x,t)
