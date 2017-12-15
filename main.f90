@@ -14,57 +14,62 @@ program main
   real*8::nombre,t1,t2,alpha
   integer::nlen,ncols,nlines,nelmt,t,i,j
 
-call Lecture("matrix/fs_760_3.mtx",A,t)
+!call Lecture("matrix/fs_760_3.mtx",A,t)
 
   !!! PARAMETRE
 
 
-!   t=20 !/!\ choisie la dimension
+  t=20 !/!\ choisie la dimension
  Allocate(x(1:t),x0(1:t),b(1:t),G(1:t,1:t),Id(1:t,1:t))!,A(1:t,1:t))
 x0=1.
-!
-!   !!! Création de la matrice An
-!
-!      !/!\ choisie la dimension
-!
-!     ! Allocate(x(1:t),b(1:t),A(1:t,1:t),G(1:t,1:t),Id(1:t,1:t))
-!     alpha=1
-!     do i=1,t
-!        do j=1,t
-!          call random_number(nombre)
-!           G(i,j)=nombre/15
-!     end do
-!   end do
-!
-!Id=reshape((/1,((0,i=1,t),1,j=1,t-1)/),(/t,t/))
-!   A=alpha*Id+matmul(transpose(G),G)
-!
-!   !!! Initialisation de notre membre de droite, la matrice B
-  b=1.
- b=b/sqrt(sum(b*b))
-!
-!
-!   !!! ALGORYTHME
-   ! x=x0  !Réinitialisation du vecteur d'entré
-   ! t1= wtime ( )
-   ! call GPO(A,b,x,t)
-   ! t2= wtime ( )
-!
-  ! print*,"temps de GPO =",t2-t1
-  ! Print*," "
-!
-!
-!
-  x=x0  !Réinitialisation du vecteur d'entré
-!
 
-!   t1= wtime ( )
-!   call residu(A,b,x,t)
-! t2=wtime ( )
-!   print*,"temps residu =",t2-t1
-!   !!print*,"residu : ",x
-!   Print*," "
-!   x=1.
+  !!! Création de la matrice An
+
+     !/!\ choisie la dimension
+
+    ! Allocate(x(1:t),b(1:t),A(1:t,1:t),G(1:t,1:t),Id(1:t,1:t))
+    alpha=1
+    do i=1,t
+       do j=1,t
+         call random_number(nombre)
+          G(i,j)=nombre
+    end do
+  end do
+
+Id=reshape((/1,((0,i=1,t),1,j=1,t-1)/),(/t,t/))
+  A=alpha*Id+matmul(transpose(G),G)
+
+  !!! Initialisation de notre membre de droite, la matrice B
+
+ do j=1,t
+          call random_number(nombre)
+           b(j)=nombre/15
+           x(j)=nombre
+     end do
+b=1
+b=1/sqrt(sum(b*b))
+x=x0
+!   !!! ALGORYTHME
+    !Réinitialisation du vecteur d'entré
+   t1= wtime ( )
+   call GPO(A,b,x,t)
+   t2= wtime ( )
+   print*,"le x de GPO",x
+  print*,"temps de GPO =",t2-t1
+  Print*," "
+!
+!
+!
+    !Réinitialisation du vecteur d'entré
+!
+ x=x0
+  t1= wtime ( )
+  call residu(A,b,x,t)
+t2=wtime ( )
+  print*,"temps residu =",t2-t1
+  !!print*,"residu : ",x
+  Print*," "
+  x=1.
 !
 !
 !
@@ -95,13 +100,13 @@ x0=1.
 
 
   !!! PRECONDITIONNEUR
-    ! x=x0  !Réinitialisation du vecteur d'entré
-    ! t1= wtime ( )
-    ! call precon_residu_SSOR(A,b,x,t)
-    ! t2=wtime ( )
-    ! print*,"temps de precon_residu_SSOR =",t2-t1
-    ! print*,"le x de precon_residu_SSOR ",x
-    ! Print*," "
+    x=x0  !Réinitialisation du vecteur d'entré
+    t1= wtime ( )
+    call precon_residu_SSOR(A,b,x,t)
+    t2=wtime ( )
+    print*,"temps de precon_residu_SSOR =",t2-t1
+    print*,"le x de precon_residu_SSOR ",x
+    Print*," "
 
 
     ! x=x0  !Réinitialisation du vecteur d'entré
@@ -113,17 +118,17 @@ x0=1.
     ! Print*," "
     !
     !
-    x=x0  !Réinitialisation du vecteur d'entré
-    t1= wtime ( )
-    call precon_residu_droite_Jacobi(A,b,x,t)
-    t2=wtime ( )
-    print*,"temps de precon_residu_droite_Jacobi =",t2-t1
-    Print*," "
+    ! x=x0  !Réinitialisation du vecteur d'entré
+    ! t1= wtime ( )
+    ! call precon_residu_droite_Jacobi(A,b,x,t)
+    ! t2=wtime ( )
+    ! print*,"temps de precon_residu_droite_Jacobi =",t2-t1
+    ! Print*," "
 
 
   !!! Liberation de la mémoire
 
-   deallocate(x,x0,b,A,G,Id)
+
 
 
 
@@ -253,13 +258,13 @@ print*,"------------------------------------------------------------------------
   !
   !
 
-  ! x=x0  !Réinitialisation du vecteur d'entré
-  ! t1= wtime ( )
-  ! call precon_residu_droite_SSOR(A,b,x,t)
-  ! t2=wtime ( )
-  ! !print*,"le x de precon_residu_droite_SSOR",x
-  ! print*,"temps de precon_residu_droite_SSOR =",t2-t1
-  ! Print*," "
+  x=x0  !Réinitialisation du vecteur d'entré
+  t1= wtime ( )
+  call precon_residu_droite_SSOR(A,b,x,t)
+  t2=wtime ( )
+  !print*,"le x de precon_residu_droite_SSOR",x
+  print*,"temps de precon_residu_droite_SSOR =",t2-t1
+  Print*," "
   !
   !
   ! x=x0  !Réinitialisation du vecteur d'entré
@@ -271,14 +276,14 @@ print*,"------------------------------------------------------------------------
   ! Print*," "
 
 
-  ! x=x0  !Réinitialisation du vecteur d'entré
-  ! t1= wtime ( )
-  ! call precon_residu_droite_SSOR_FlexibleC(A,b,x,t)
-  ! t2=wtime ( )
-  ! !!print*,"le x de precon_residu_droite_SSOR_FlexibleC",x
-  ! print*,"temps de precon_residu_droite_SSOR_FlexibleC =",t2-t1
-  ! Print*," "
-
+   !Réinitialisation du vecteur d'entré
+!   t1= wtime ( )
+!   call precon_residu_droite_SSOR_FlexibleC(A,b,x,t)
+!   t2=wtime ( )
+!   !!print*,"le x de precon_residu_droite_SSOR_FlexibleC",x
+!   print*,"temps de precon_residu_droite_SSOR_FlexibleC =",t2-t1
+!   Print*," "
+deallocate(x,x0,b,A,G,Id)
 
 
 end program main

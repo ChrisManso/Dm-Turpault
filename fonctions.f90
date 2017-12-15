@@ -11,18 +11,18 @@ contains
     real*8,dimension(t,t)::D,N
     real*8,dimension(t)::r,Xnext
     integer ::i,j,k,kmax
-    real*8::max,sigma, eps
+    real*8::maxi,sigma, eps
 
 
     r=b-matmul(A,x)
-    max=abs(sum(r*r))
+    maxi=abs(sum(r*r))
 
     kmax=150
-    eps=0.0001
+    eps=0.000001
 
     k=0
     xnext=0.
-    do while (k<kmax .and. max>eps)
+    do while (k<kmax .and. maxi>eps)
       do i=1,t
         sigma=0.
         do j=1,t
@@ -37,14 +37,14 @@ contains
 
       r=b-matmul(A,X)
 
-      if (abs(SUM(r*r))<max) then
-        max=abs(sum(r*r))
+      if (abs(SUM(r*r))<maxi) then
+        maxi=abs(sum(r*r))
       end if
       call write(k,sqrt(sum(r*r)),"Jacobi.txt")
       k=k+1
 
     end do
-    print*,"Pour Jacobi le residu vaut ", max
+    print*,"Pour Jacobi le residu vaut ", maxi
     print*,"il est atteint a l'iteration numero ",k
   end subroutine Jacobi
 
@@ -56,7 +56,7 @@ contains
     real*8,dimension(t),intent(in)::b
     real*8,dimension(t),intent(inout)::x
     real*8,dimension(t)::r,z
-    real*8:: alpha,eps,nume,denom,max
+    real*8:: alpha,eps,nume,denom,maxi
     integer :: k, kmax,i
 
 
@@ -64,8 +64,8 @@ contains
 
     k=0
 
-    kmax=150
-    eps=0.0001
+    kmax=1000
+    eps=0.000001
 
     nume=0.
     denom=0.
@@ -74,8 +74,8 @@ contains
 
 
 
-    max= abs(sum(r*r))
-    do while (k<kmax .and. max>eps)
+    maxi= abs(sum(r*r))
+    do while (k<kmax .and. maxi>eps)
 
       nume=0.
       denom=0.
@@ -91,14 +91,14 @@ contains
       r=r-alpha*z
 
 
-      if (abs(SUM(r*r))<max) then
-        max=abs(sum(r*r))
+      if (abs(SUM(r*r))<maxi) then
+        maxi=abs(sum(r*r))
       end if
       call write(k,sqrt(sum(r*r)),"GPOpti.txt")
       k=k+1
 
     end do
-    print*,"Pour GPO le residu vaut ", max
+    print*,"Pour GPO le residu vaut ", maxi
     print*,"il est atteint a l'iteration numero ",k
   end subroutine GPO
 
@@ -111,13 +111,13 @@ contains
     real*8,dimension(t),intent(in)::b
     real*8,dimension(t),intent(inout)::x
     real*8,dimension(t)::r,z
-    real*8:: alpha,eps,nume,denom,maxi,norme
+    real*8:: alpha,eps,nume,denom,maxii,norme
     integer :: k, kmax,i
 
 
 
     kmax=1000
-    eps=0.0001
+    eps=0.000001
 
 
     alpha=0.
@@ -126,6 +126,56 @@ contains
     r=b-matmul(A,x)
 
 
+    k=0
+    maxii=abs(sum(r*r))
+
+    do while (k<kmax .and.  maxii>eps)
+      nume=0.
+      denom=0.
+      z=matmul(A,r)
+      do i=1,t
+        nume=nume+r(i)*z(i)
+        denom=denom+z(i)*z(i)
+      end do
+      alpha=nume/denom
+
+      x=x+alpha*r
+      r=r-alpha*z
+      norme=abs(sum(r*r))
+      if (norme<maxii) then
+        maxii=norme
+      end if
+      call write(k,norme,"ResMin.txt")
+
+      k=k+1
+
+    end do
+    print*,"Pour ResiduMinimum le residu vaut ", maxii
+    print*,"il est atteint a l'iteration numero ",k
+  end subroutine residu
+
+
+  subroutine residu2(A,b,x,t)
+    integer,intent(in)::t !!taille des matrices
+    real*8,dimension(t,t),intent(in)::A
+    real*8,dimension(t),intent(in)::b
+    real*8,dimension(t),intent(inout)::x
+    real*8,dimension(t)::r,z
+    real*8:: alpha,eps,nume,denom,maxi
+    integer :: k, kmax,i
+
+
+
+    kmax=10
+    eps=0.000001
+
+
+    alpha=0.
+    z=0.
+    Call multi_mat(r,A,x,t)
+
+    r=b-r
+    maxi=0
     k=0
     maxi=abs(sum(r*r))
 
@@ -141,59 +191,9 @@ contains
 
       x=x+alpha*r
       r=r-alpha*z
-      norme=abs(sum(r*r))
-      if (norme<maxi) then
-        maxi=norme
-      end if
-      call write(k,norme,"ResMin.txt")
 
-      k=k+1
-
-    end do
-    print*,"Pour ResiduMinimum le residu vaut ", maxi
-    print*,"il est atteint a l'iteration numero ",k
-  end subroutine residu
-
-
-  subroutine residu2(A,b,x,t)
-    integer,intent(in)::t !!taille des matrices
-    real*8,dimension(t,t),intent(in)::A
-    real*8,dimension(t),intent(in)::b
-    real*8,dimension(t),intent(inout)::x
-    real*8,dimension(t)::r,z
-    real*8:: alpha,eps,nume,denom,max
-    integer :: k, kmax,i
-
-
-
-    kmax=10
-    eps=0.0001
-
-
-    alpha=0.
-    z=0.
-    Call multi_mat(r,A,x,t)
-
-    r=b-r
-    max=0
-    k=0
-    max=abs(sum(r*r))
-
-    do while (k<kmax .and.  max>eps)
-      nume=0.
-      denom=0.
-      z=matmul(A,r)
-      do i=1,t
-        nume=nume+r(i)*z(i)
-        denom=denom+z(i)*z(i)
-      end do
-      alpha=nume/denom
-
-      x=x+alpha*r
-      r=r-alpha*z
-
-      if (abs(sum(r*r))<max) then
-        max=abs(sum(r*r))
+      if (abs(sum(r*r))<maxi) then
+        maxi=abs(sum(r*r))
       end if
 
 
@@ -214,11 +214,11 @@ contains
     real*8,dimension(t),intent(inout)::x
     real*8,dimension(t,t)::M
     real*8,dimension(t)::r,z,q,w
-    real*8:: alpha,eps,nume,denom,max
+    real*8:: alpha,eps,nume,denom,maxi,norme
     integer :: k, kmax,i
 
-    call multi_mat(r,A,x,t)
-    r=b-r
+
+    r=b-matmul(A,x)
     m=0.
     do i=1,t
       M(i,i)=A(i,i)
@@ -228,12 +228,12 @@ contains
 
     k=0
 
-    kmax=150
-    eps=0.0001
+    kmax=400
+    eps=0.000001
 
 
-    max=abs(sum(r*r))
-    do while((k<kmax .and.  max>eps))
+    maxi=abs(sum(r*r))
+    do while((k<kmax .and.  maxi>eps))
       w=matmul(A,q)
 
       nume=0.
@@ -252,15 +252,15 @@ contains
 
       q=q-alpha*z
 
+      norme=abs(sum(r*r))
 
-
-      if (abs(sum(r*r))<max) then
-        max=abs(sum(r*r))
+      if (norme<maxi) then
+        maxi=norme
       end if
-      call write(k,sqrt(sum(r*r)),"ResJac.txt")
+      call write(k,norme,"ResJac.txt")
       k=k+1
     end do
-    print*,"Pour Residu preconditinné a gauche par jacobi le residu vaut ", max
+    print*,"Pour Residu preconditinné a gauche par jacobi le residu vaut ", maxi
     print*,"il est atteint a l'iteration numero ",k
   end subroutine precon_residu_Jacobi
 
@@ -271,14 +271,14 @@ contains
     real*8,dimension(t,t),intent(in)::A
     real*8,dimension(t),intent(in)::b
     real*8,dimension(t),intent(inout)::x
-    real*8,dimension(t,t)::M,R1,Q1,D,E,F
+    real*8,dimension(t,t)::M,R1,Q1,D,E,F,D1
     real*8,dimension(t)::r,z,q,w,y
-    real*8:: alpha,eps,nume,denom,max,som
+    real*8:: alpha,eps,nume,denom,maxi,som,norme
     integer :: k, kmax,i,ui,uj
 
-    call multi_mat(r,A,x,t)
-    r=b-r
-    m=0.
+
+    r=b-matmul(A,x)
+    M=0.
 
 
     !! création des matrices E,D,F
@@ -289,6 +289,7 @@ contains
       do j=1,t
         if (i==j) then
           D(i,j)=A(i,i)
+          D1(i,j)=1./A(i,i)
         else if (j<i) then
           E(i,j)=-A(i,j)
         else
@@ -298,10 +299,12 @@ contains
       end do
     end do
 
-
-    M=matmul(matmul((D-0.5*E),transpose(D)),(D-0.5*F))  !! construction du préconditionneur
+    M=matmul((D-0.5*E),D1)
+    M=matmul(M,(D-0.5*F))  !! construction du préconditionneur
 
     call givens(M,t,Q1,R1)
+
+
 
     !! resolution du systeme Mq=r
     w=matmul(transpose(Q1),r)
@@ -313,17 +316,18 @@ contains
           end do
           q(ui) = (w(ui)-som)/R1(ui,ui)
        end do
-
+       print*,q
 
     k=0
 
-    kmax=150
-    eps=0.0001
+    kmax=400
+    eps=0.000001
 
 
-    max=abs(sum(r*r))
-    do while((k<kmax .and.  max>eps))
-      call multi_mat(w,A,q,t)
+    maxi=abs(sum(r*r))
+    do while((k<kmax .and.  maxi>eps))
+      w=0.
+      w=Matmul(A,q)
 
 
       !! resolution de Mz=w
@@ -353,15 +357,15 @@ contains
 
       q=q-alpha*z
 
-
-      if (abs(sum(r*r))<max) then
-        max=abs(sum(r*r))
+      norme=abs(sum(r*r))
+      if (norme<maxi) then
+        maxi=norme
       end if
-      call write(k,sqrt(sum(r*r)),"ResSSO.txt")
+      call write(k,norme,"ResSSO.txt")
       k=k+1
     end do
 
-    print*,"Pour Residu precontionne a gauche par SSOR le residu vaut ", max
+    print*,"Pour Residu precontionne a gauche par SSOR le residu vaut ", maxi
     print*,"il est atteint a l'iteration numero ",k
   end subroutine precon_residu_SSOR
 
@@ -374,7 +378,7 @@ contains
    real*8,dimension(t),intent(inout)::x
    real*8,dimension(t,t)::M
    real*8,dimension(t)::r,z,q,w,u
-   real*8:: alpha,eps,nume,denom,max,norme
+   real*8:: alpha,eps,nume,denom,maxi,norme
    integer :: k, kmax,i
    M=0.
    do i=1,t
@@ -388,15 +392,15 @@ contains
     k=0
 
 
-    kmax=10000
-    eps=0.0001
+    kmax=100000
+    eps=0.000001
 
 
-    max=abs(sum(r*r))
+    maxi=abs(sum(r*r))
 
 
 
-   do while((k<kmax .and.  max>eps))
+   do while((k<kmax .and.  maxi>eps))
      z=0.
      !!resoudre Mz=r
      do i=1,t
@@ -423,13 +427,13 @@ contains
 
 
      norme=abs(sum(r*r))
-    if (norme<max) then
-        max=norme
+    if (norme<maxi) then
+        maxi=norme
     end if
 
 
     end do
-    print*,"Pour Residu preconditionne a droit par Jacobi le residu vaut ", max
+    print*,"Pour Residu preconditionne a droit par Jacobi le residu vaut ", maxi
     print*,"il est atteint a l'iteration numero ",k
 
   end subroutine precon_residu_droite_Jacobi
@@ -439,9 +443,9 @@ contains
    real*8,dimension(t,t),intent(in)::A
    real*8,dimension(t),intent(in)::b
    real*8,dimension(t),intent(inout)::x
-   real*8,dimension(t,t)::M,Q1,R1,D,E,F
+   real*8,dimension(t,t)::M,Q1,R1,D,E,F,D1
    real*8,dimension(t)::r,z,q,w,u
-   real*8:: alpha,eps,nume,denom,max,norme,som
+   real*8:: alpha,eps,nume,denom,maxi,norme,som
    integer :: k, kmax,i,ui,uj
    M=0.
 
@@ -451,7 +455,8 @@ contains
    do i=1,t
      do j=1,t
        if (i==j) then
-         D(i,j)=A(i,i)
+         D(i,j)=A(i,j)
+         D1(i,j)=1./A(i,j)
        else if (j<i) then
          E(i,j)=-A(i,j)
        else
@@ -460,8 +465,8 @@ contains
 
      end do
    end do
-
-   M=matmul(matmul((D-0.8*E),transpose(D)),(D-0.8*F))  !! construction du préconditionneur
+   M=matmul((D-0.8*E),D1)
+   M=matmul(M,(D-0.8*F))  !! construction du préconditionneur
 
 
 
@@ -474,12 +479,12 @@ contains
    k=0
 
    kmax=150
-   eps=0.0001
+   eps=0.000001
 
-   max=abs(sum(r*r))
+   maxi=abs(sum(r*r))
 
 
-   do while((k<kmax .and.  max>eps))
+   do while((k<kmax .and.  maxi>eps))
 
      call givens(M,t,Q1,R1)
 
@@ -511,12 +516,12 @@ contains
      k=k+1
 
      norme=abs(sum(r*r))
-    if (norme<max) then
-        max=norme
+    if (norme<maxi) then
+        maxi=norme
     end if
 
    end do
-   print*,"precon_residu_droite_SSOR = ",max,k
+   print*,"precon_residu_droite_SSOR = ",maxi,k
 
  end subroutine precon_residu_droite_SSOR
 
@@ -526,9 +531,9 @@ contains
    real*8,dimension(t,t),intent(in)::A
    real*8,dimension(t),intent(in)::b
    real*8,dimension(t),intent(inout)::x
-   real*8,dimension(t,t)::M,Q1,R1,D,E,F
+   real*8,dimension(t,t)::M,Q1,R1,D,E,F,D1
    real*8,dimension(t)::r,z,q,w,u
-   real*8:: alpha,eps,nume,denom,max,norme,som,Para
+   real*8:: alpha,eps,nume,denom,maxi,norme,som,Para
    integer :: k, kmax,i,ui,uj
    M=0.
 
@@ -539,6 +544,7 @@ contains
      do j=1,t
        if (i==j) then
          D(i,j)=A(i,i)
+         D1(i,j)=1./A(i,j)
        else if (j<i) then
          E(i,j)=-A(i,j)
        else
@@ -548,7 +554,7 @@ contains
      end do
    end do
    para=1.5
-   M=matmul(matmul((D-para*E),transpose(D)),(D-para*F))  !! construction du préconditionneur
+   M=matmul(matmul((D-para*E),D1),(D-para*F))  !! construction du préconditionneur
 
    r=0.
 
@@ -558,12 +564,12 @@ contains
    k=0
 
    kmax=150
-   eps=0.0001
+   eps=0.000001
 
-   max=abs(sum(r*r))
+   maxi=abs(sum(r*r))
 
 
-   do while((k<kmax .and.  max>eps))
+   do while((k<kmax .and.  maxi>eps))
 
 
      if (para==0.5) then
@@ -571,7 +577,7 @@ contains
      else
        para=0.5
      end if
-     M=matmul(matmul((D-para*E),transpose(D)),(D-para*F))
+     M=matmul(matmul((D-para*E),D1),(D-para*F))
      call givens(M,t,Q1,R1)
 
      !! resolution du systeme Mz=r
@@ -603,12 +609,12 @@ contains
      k=k+1
 
      norme=abs(sum(r*r))
-    if (norme<max) then
-        max=norme
+    if (norme<maxi) then
+        maxi=norme
     end if
 
    end do
-   print*,"precon_residu_droite_SSOR_FlexibleB = ",max,k
+   print*,"precon_residu_droite_SSOR_FlexibleB = ",maxi,k
 
  end subroutine precon_residu_droite_SSOR_FlexibleB
 
@@ -622,7 +628,7 @@ contains
    real*8,dimension(t),intent(inout)::x
    real*8,dimension(t,t)::M,Q1,R1,D,E,F
    real*8,dimension(t)::r,z,q,w,u
-   real*8:: alpha,eps,nume,denom,max,norme,som,Para
+   real*8:: alpha,eps,nume,denom,maxi,norme,som,Para
    integer :: k, kmax,i,ui,uj
    M=A
 
@@ -634,12 +640,12 @@ contains
    denom=0.
    k=0
 
-   kmax=150
-   eps=0.0001
+   kmax=1000
+   eps=0.000001
 
-   max=abs(sum(r*r))
+   maxi=abs(sum(r*r))
 
-   do while((k<kmax .and.  max>eps))
+   do while((k<kmax .and.  maxi>eps))
 
      !! resolution du systeme Mz=r
     call residu2(A,r,z,t)
@@ -662,13 +668,13 @@ contains
      k=k+1
 
      norme=abs(sum(r*r))
-    if (norme<max) then
-        max=norme
+    if (norme<maxi) then
+        maxi=norme
     end if
 
    end do
 
-   print*,"precon_residu_droite_SSOR_FlexibleC = ",max,k
+   print*,"precon_residu_droite_SSOR_FlexibleC = ",maxi,k
 
  end subroutine precon_residu_droite_SSOR_FlexibleC
 
@@ -940,12 +946,12 @@ subroutine mat_rot(t,i,j,c,s,M)
 
     implicit none
 
-    integer ( kind = 4 ) clock_max
+    integer ( kind = 4 ) clock_maxi
     integer ( kind = 4 ) clock_rate
     integer ( kind = 4 ) clock_reading
     real ( kind = 8 ) wtime
 
-    call system_clock ( clock_reading, clock_rate, clock_max )
+    call system_clock ( clock_reading, clock_rate, clock_maxi )
 
     wtime = real ( clock_reading, kind = 8 ) &
     / real ( clock_rate, kind = 8 )
